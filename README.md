@@ -1,3 +1,6 @@
+
+> **🤖 AI-Powered Development**: Eryth uygulamasını %90'ını yapay zeka (GitHub Copilot) ile birlikte geliştirdim.
+
 # 🎵 Eryth - Modern Müzik Platformu
 
 **Eryth**, ASP.NET Core ve modern web teknolojileri kullanılarak geliştirilmiş kapsamlı bir müzik streaming ve paylaşım platformudur. Kullanıcılar müzik yükleyebilir, çalma listeleri oluşturabilir, diğer kullanıcıları takip edebilir ve sosyal etkileşimde bulunabilir.
@@ -505,7 +508,7 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 
 ## 👨‍💻 Geliştirici
 
-- **İtach** - *Tam Stack Geliştirici*
+- **mrctnd** - *Full-Stack Developer*
 
 ## 🙏 Teşekkürler
 
