@@ -1,0 +1,177 @@
+@model UploadTrackViewModel
+
+@{
+    ViewData["Title"] = "Yükle";
+    Layout = "_LayoutUpload";
+}
+
+<div class="min-h-screen bg-black text-white">    <!-- Header -->
+    <div class="flex items-center justify-between p-6 border-b border-muted">
+        <div class="flex items-center space-x-3">
+            <i data-lucide="cloud-upload" class="w-6 h-6 text-accent"></i>
+            <h1 class="text-2xl font-bold">Yükle</h1>
+        </div>
+        <button onclick="window.location.href='/'" class="text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-muted">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+    </div><div class="flex items-center justify-center min-h-[80vh] p-8">
+        <div class="w-full max-w-4xl mx-auto">
+            <!-- Main Heading -->
+            <div class="text-center mb-20">
+                <h2 class="text-3xl font-bold text-white mb-4">Ses dosyalarınızı yükleyin.</h2>
+                <p class="text-gray-400 text-lg">En iyi kalite için WAV, FLAC, AIFF veya ALAC kullanın. Maksimum dosya boyutu sıkıştırılmamış 4GB'dır. <a href="#" class="text-accent hover:underline">Daha fazla bilgi.</a></p>
+            </div>
+
+        <form asp-action="Upload" method="post" enctype="multipart/form-data" id="upload-form">
+            <!-- Upload Area -->
+            <div class="flex justify-center mb-20">
+                <div class="border-2 border-dashed border-gray-600 rounded-lg p-20 text-center hover:border-accent transition-colors duration-300 w-full max-w-3xl" id="file-drop-zone">
+                <div class="mb-6">
+                    <div class="w-24 h-24 mx-auto bg-muted rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="cloud-upload" class="w-12 h-12 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-medium text-white mb-2">Başlamak için ses dosyalarını sürükleyip bırakın.</h3>
+                
+                <input type="file" id="audio-file-input" asp-for="AudioFile" accept=".mp3,.wav,.flac,.m4a,.aiff,.alac" class="hidden">
+                <button type="button" onclick="document.getElementById('audio-file-input').click()" class="bg-white text-black px-8 py-3 rounded-full font-medium hover:bg-gray-200 transition-colors duration-200 mt-4">
+                    Dosya Seç
+                </button>                </div>            </div>
+
+<!-- Metadata Form -->
+            <div id="metadata-form" class="hidden space-y-8 max-w-4xl mx-auto">
+                <!-- Cover Image and Basic Info -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Cover Image -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-muted rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-white mb-4">Kapak Resmi</h3>
+                            <div id="cover-image-preview" class="w-full aspect-square bg-muted rounded-lg border-2 border-dashed border-gray-600 hover:border-accent transition-colors duration-300 flex items-center justify-center cursor-pointer" onclick="document.getElementById('cover-image-input').click()">
+                                <div class="text-center">
+                                    <i data-lucide="image" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                                    <p class="text-gray-400 text-sm">Resim yükle</p>
+                                </div>
+                            </div>
+                            <input type="file" id="cover-image-input" asp-for="CoverImage" accept="image/*" class="hidden">
+                            <button type="button" id="remove-cover" class="hidden w-full bg-gray-600 hover:bg-gray-500 text-white py-2 rounded-lg text-sm transition-colors mt-3">
+                                Resmi Kaldır
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Track Details -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-[#1A1A1A] rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-white mb-6">Parça Detayları</h3>
+                            <div class="space-y-6">                                <!-- Title -->
+                                <div>
+                                    <label asp-for="Title" class="block text-sm font-medium text-white mb-2">Başlık *</label>
+                                    <input asp-for="Title" type="text" class="w-full bg-[#0B0B0B] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF5500] focus:border-transparent" placeholder="Parçanızı adlandırın">
+                                    <span asp-validation-for="Title" class="text-red-400 text-sm"></span>
+                                </div>
+
+                                <!-- Artist -->
+                                <div>
+                                    <label asp-for="Artist" class="block text-sm font-medium text-white mb-2">Sanatçı *</label>
+                                    <input asp-for="Artist" type="text" class="w-full bg-[#0B0B0B] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF5500] focus:border-transparent" placeholder="Sanatçı adını girin">
+                                    <span asp-validation-for="Artist" class="text-red-400 text-sm"></span>
+                                </div>
+
+                                <!-- Genre -->
+                                <div>
+                                    <label asp-for="Genre" class="block text-sm font-medium text-white mb-2">Tür *</label>
+                                    <select asp-for="Genre" class="w-full bg-[#0B0B0B] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF5500] focus:border-transparent">
+                                        <option value="">Bir tür seçin</option>
+                                        <option value="Electronic">Elektronik</option>
+                                        <option value="Hip Hop">Hip Hop</option>
+                                        <option value="Rock">Rock</option>
+                                        <option value="Pop">Pop</option>
+                                        <option value="Jazz">Jazz</option>
+                                        <option value="Classical">Klasik</option>
+                                        <option value="R&B">R&B</option>
+                                        <option value="Country">Country</option>
+                                        <option value="Folk">Folk</option>
+                                        <option value="Reggae">Reggae</option>
+                                        <option value="Blues">Blues</option>
+                                        <option value="Ambient">Ambient</option>
+                                        <option value="House">House</option>
+                                        <option value="Techno">Techno</option>
+                                        <option value="Dubstep">Dubstep</option>
+                                        <option value="Trap">Trap</option>
+                                        <option value="Lo-fi">Lo-fi</option>
+                                        <option value="Indie">Indie</option>
+                                        <option value="Alternative">Alternatif</option>
+                                        <option value="Other">Diğer</option>
+                                    </select>
+                                    <span asp-validation-for="Genre" class="text-red-400 text-sm"></span>
+                                </div>
+
+                                <!-- Tags -->
+                                <div>
+                                    <label asp-for="Tags" class="block text-sm font-medium text-white mb-2">Etiketler</label>
+                                    <input asp-for="Tags" type="text" class="w-full bg-[#0B0B0B] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF5500] focus:border-transparent" placeholder="Etiketleri virgülle ayırarak girin">
+                                    <p class="text-gray-500 text-sm mt-1">Parçanızın ruh halini ve tarzını tanımlamak için etiketler ekleyin</p>
+                                </div>
+
+                                <!-- Description -->
+                                <div>
+                                    <label asp-for="Description" class="block text-sm font-medium text-white mb-2">Açıklama</label>
+                                    <textarea asp-for="Description" rows="4" class="w-full bg-[#0B0B0B] text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF5500] focus:border-transparent resize-none" placeholder="Parçanızı açıklayın"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="bg-[#1A1A1A] rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-white mb-6">Gizlilik</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Public Track -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label for="IsPublic" class="text-white font-medium">Herkese Açık Parça</label>
+                                <p class="text-gray-400 text-sm">Herkes bu parçayı dinleyebilir</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input asp-for="IsPublic" type="checkbox" checked class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                            </label>
+                        </div>
+
+                        <!-- Explicit Content -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label for="IsExplicit" class="text-white font-medium">Müstehcen İçerik</label>
+                                <p class="text-gray-400 text-sm">Müstehcen sözler veya içerik barındırır</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input asp-for="IsExplicit" type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center">
+                    <button type="button" id="back-btn" class="text-gray-400 hover:text-white transition-colors">
+                        <i data-lucide="arrow-left" class="w-5 h-5 inline mr-2"></i>
+                        Geri
+                    </button>
+                    <button type="submit" class="bg-accent hover:bg-accent-dark text-white px-8 py-3 rounded-full font-medium transition-colors duration-200">
+                        Parçayı kaydet
+                    </button>                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="~/js/track/upload.js"></script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

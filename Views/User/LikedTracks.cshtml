@@ -1,0 +1,223 @@
+@model IEnumerable<Eryth.ViewModels.TrackViewModel>
+@{
+    ViewData["Title"] = "Beğenilen Parçalar";
+    var username = ViewBag.Username as string;
+}
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #00ff87 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-20 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-6xl font-black tracking-tight leading-none mb-6">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Beğenilen</span> Parçalar
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                    @if (!string.IsNullOrEmpty(username))
+                    {
+                        <span><span class="text-accent font-medium">@username</span> tarafından beğenilen parçalar</span>
+                    }
+                    else
+                    {
+                        <span>Favori müzik koleksiyonunuz</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="max-w-6xl mx-auto px-6 pb-12 -mt-8 relative z-10">
+        @if (Model.Any())
+        {
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-8">
+                    <div>                        <h2 class="text-2xl font-bold text-white">Favori Parçalar</h2>
+                        <p class="text-gray-400 mt-1">@Model.Count() beğenilen parça</p>
+                    </div>
+                    <button onclick="shufflePlaylist()" 
+                            class="inline-flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-dark text-white hover:from-accent-dark hover:to-accent px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1">
+                        <i data-lucide="shuffle" class="w-5 h-5"></i>
+                        <span>Karışık Çal</span>
+                    </button>
+                </div>
+
+                <!-- Tracks Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach (var track in Model)
+                    {
+                        <div class="group bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 hover:bg-white/10 hover:border-accent/30 transition-all duration-300 transform hover:-translate-y-1">
+                            <!-- Track Cover -->
+                            <div class="relative mb-4">                                <div class="aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-accent/20 to-accent/10">
+                                    @if (!string.IsNullOrEmpty(track.CoverImageUrl))
+                                    {
+                                        <img src="@(track.CoverImageUrl.StartsWith("/") ? track.CoverImageUrl : "/" + track.CoverImageUrl)" alt="@track.Title" class="w-full h-full object-cover">
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <i data-lucide="music" class="w-12 h-12 text-accent"></i>
+                                        </div>
+                                    }
+                                </div>
+                                  <!-- Play Button Overlay -->
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 rounded-lg">
+                                    <button onclick="playTrackFromLiked('@track.Id', '@Html.Raw(Html.Encode(track.Title).Replace("'", "\\'"))', '@Html.Raw(Html.Encode(track.ArtistName).Replace("'", "\\'"))', '@(track.AudioFileUrl?.StartsWith("/") == true ? track.AudioFileUrl : "/" + (track.AudioFileUrl ?? ""))', '@(track.CoverImageUrl?.StartsWith("/") == true ? track.CoverImageUrl : "/" + (track.CoverImageUrl ?? ""))')" class="w-12 h-12 bg-accent hover:bg-accent-dark rounded-full flex items-center justify-center text-white transition-colors duration-200">
+                                        <i data-lucide="play" class="w-6 h-6 ml-1"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Like Badge -->
+                                <div class="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg">
+                                    <i data-lucide="heart" class="w-4 h-4 fill-current"></i>
+                                </div>
+                            </div>
+
+                            <!-- Track Info -->
+                            <div class="mb-4">
+                                <h3 class="text-white font-bold text-lg truncate group-hover:text-accent transition-colors duration-300">
+                                    <a href="@Url.Action("Details", "Track", new { id = track.Id })" class="hover:text-accent transition-colors duration-200">
+                                        @track.Title
+                                    </a>
+                                </h3>                                <p class="text-gray-400 text-sm truncate">
+                                    By <a href="@Url.Action("Profile", "User", new { username = track.ArtistName })" class="hover:text-accent transition-colors duration-200">@track.ArtistName</a>
+                                </p>
+                                @if (!string.IsNullOrEmpty(track.Description))
+                                {
+                                    <p class="text-gray-500 text-xs mt-1 line-clamp-2">@track.Description</p>
+                                }
+                                <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                                    <span><i data-lucide="music-2" class="w-3 h-3 inline mr-1"></i>@track.Genre</span>
+                                    <span><i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>@track.FormattedDuration</span>
+                                </div>
+                            </div>
+
+                            <!-- Track Stats -->
+                            <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+                                <div class="bg-white/5 rounded-lg p-2">
+                                    <div class="text-white font-semibold text-sm">@track.PlayCount</div>
+                                    <div class="text-gray-400 text-xs">Çalınma</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-2">
+                                    <div class="text-white font-semibold text-sm">@track.LikeCount</div>
+                                    <div class="text-gray-400 text-xs">Beğeni</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-2">
+                                    <div class="text-white font-semibold text-sm">@track.CommentCount</div>
+                                    <div class="text-gray-400 text-xs">Yorum</div>
+                                </div>
+                            </div>                            <!-- Action Buttons -->
+                            <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                                <div class="flex items-center space-x-2">
+                                    <!-- Unlike Button -->
+                                    @await Html.PartialAsync("_LikeButton", new Eryth.ViewModels.LikeButtonViewModel 
+                                    { 
+                                        TrackId = track.Id, 
+                                        IsLiked = true, 
+                                        LikeCount = (int)track.LikeCount,
+                                        ShowCount = false,
+                                        ButtonClass = "flex items-center space-x-1 text-red-400 hover:text-red-300 transition-colors duration-200"
+                                    })
+                                    
+                                    <!-- Add to Playlist -->
+                                    <button onclick="showAddToPlaylistModal(@track.Id)" 
+                                            class="flex items-center space-x-1 text-gray-400 hover:text-accent transition-colors duration-200">
+                                        <i data-lucide="list-plus" class="w-4 h-4"></i>
+                                        <span class="text-xs">Ekle</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <!-- Share -->
+                                    <button onclick="shareTrack(@track.Id, '@track.Title')" 
+                                            class="text-gray-400 hover:text-accent transition-colors duration-200">
+                                        <i data-lucide="share-2" class="w-4 h-4"></i>
+                                    </button>
+                                    
+                                    <!-- More Options -->
+                                    <div class="relative">
+                                        <button onclick="toggleDropdown('dropdown-@track.Id')" 
+                                                class="text-gray-400 hover:text-accent transition-colors duration-200">
+                                            <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                                        </button>
+                                        <div id="dropdown-@track.Id" class="hidden absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-white/10 z-50">
+                                            <a href="@Url.Action("Details", "Track", new { id = track.Id })" 
+                                               class="block px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-accent rounded-t-lg">
+                                                <i data-lucide="eye" class="w-4 h-4 inline mr-2"></i>Detayları Görüntüle
+                                            </a>                                            <a href="@Url.Action("Profile", "User", new { username = track.ArtistName })" 
+                                               class="block px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-accent">
+                                                <i data-lucide="user" class="w-4 h-4 inline mr-2"></i>Sanatçıyı Görüntüle
+                                            </a>
+                                            <button onclick="reportTrack(@track.Id)" 
+                                                    class="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-red-400 rounded-b-lg">
+                                                <i data-lucide="flag" class="w-4 h-4 inline mr-2"></i>Şikayet Et
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Empty State -->
+            <div class="text-center py-20">
+                <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-12 max-w-md mx-auto">
+                    <div class="w-24 h-24 bg-gradient-to-br from-accent/20 to-accent/10 rounded-full flex items-center justify-center mx-auto mb-8">
+                        <i data-lucide="heart" class="w-12 h-12 text-accent"></i>
+                    </div>                    <h3 class="text-2xl font-bold text-white mb-4">Henüz Beğenilen Parça Yok</h3>
+                    <p class="text-gray-400 mb-8 leading-relaxed">
+                        @if (!string.IsNullOrEmpty(username))
+                        {
+                            <span>@username henüz hiç parça beğenmemiş.</span>
+                        }
+                        else
+                        {
+                            <span>Henüz hiç parça beğenmediniz. Keşfetmeye başlayın ve sevdiğiniz müzikleri bulun!</span>
+                        }
+                    </p>
+                    <a href="@Url.Action("Index", "Home")" 
+                       class="inline-flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-dark text-white hover:from-accent-dark hover:to-accent px-8 py-4 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                        <span>Müzik Keşfet</span>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Add to Playlist Modal -->
+<div id="addToPlaylistModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4 border border-white/10">
+        <h3 class="text-xl font-bold text-white mb-4">Çalma Listesine Ekle</h3>
+        <div id="playlistList" class="space-y-2 mb-4">
+            <!-- Playlists will be loaded here -->
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeAddToPlaylistModal()" 
+                    class="px-4 py-2 text-gray-400 hover:text-white transition-colors duration-200">
+                İptal
+            </button>
+            <button onclick="createNewPlaylist()" 
+                    class="px-4 py-2 bg-accent hover:bg-accent-dark text-white rounded-lg transition-colors duration-200">
+                Yeni Çalma Listesi Oluştur
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/user/likedTracks.js"></script>

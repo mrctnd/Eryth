@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Eryth</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="~/css/output.css" rel="stylesheet" />
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Custom CSS -->
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+<body class="bg-[#0B0B0B] text-white font-sans min-h-screen">
+
+    <!-- Page Transition Overlay -->
+    <div id="page-transition" class="fixed inset-0 bg-primary z-[100] opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out">
+        <div class="flex items-center justify-center h-full">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+        </div>
+    </div>
+
+    <!-- Main Content (No Navbar) -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Footer Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <!-- Initialize Lucide Icons -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,359 @@
+@model Eryth.ViewModels.AboutPageViewModel
+@{
+    ViewData["Title"] = "Hakkımızda";
+    Layout = "_Layout";
+}
+
+<div class="min-h-screen bg-primary pt-20 pb-12">
+    <div class="max-w-6xl mx-auto px-6">
+
+        <!-- Hero Section -->
+        <div class="text-center mb-16">
+            <div
+                class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-accent to-accent-dark rounded-full mb-8">
+                <i data-lucide="music" class="w-10 h-10 text-white"></i>
+            </div>
+            <h1 class="text-5xl font-bold text-white mb-6">
+                <span class="text-accent">Eryth</span> Hakkında
+            </h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                Eryth, sanatçıları ve dinleyicileri yenilikçi ve kesintisiz bir deneyimde bir araya getiren modern bir müzik akış platformudur. Müzik ve teknoloji konusunda tutkuyu paylaşıyor, yaratıcılığın toplulukla buluştuğu bir alan oluşturuyoruz.
+            </p>
+        </div>
+
+        <!-- Mission & Vision Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
+            <div class="bg-primary-light rounded-2xl p-8 border border-secondary/50">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center mr-4">
+                        <i data-lucide="target" class="w-6 h-6 text-accent"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Misyonumuz</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed">
+                    Bağımsız sanatçıların eserlerini paylaşabileceği ve müzik severlerin dünyanın her yerinden yeni sesler keşfedebileceği sezgisel bir platform sağlayarak müzik keşfi ve yaratımını demokratikleştirmek. Her sesin duyulmayı hak ettiğine inanıyoruz.
+                </p>
+            </div>
+
+            <div class="bg-primary-light rounded-2xl p-8 border border-secondary/50">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center mr-4">
+                        <i data-lucide="eye" class="w-6 h-6 text-accent"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Vizyonumuz</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed">
+                    Müzik keşfi için önde gelen platform olmak ve sanatçılar ile dinleyicilerin müziğin evrensel diliyle bağlantı kurduğu küresel bir topluluk oluşturmak. Coğrafyanın artık müzikal ifadeyi sınırlamadığı bir gelecek öngörüyoruz.
+                </p>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">Eryth'i Özel Kılan Nedir</h2>
+                <p class="text-gray-400 text-lg">Bizi diğer müzik platformlarından ayıran özellikleri keşfedin</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div
+                    class="bg-primary-light rounded-xl p-6 border border-secondary/50 hover:border-accent/50 transition-colors duration-300">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-r from-accent to-accent-dark rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="upload-cloud" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Kolay Yükleme</h3>
+                    <p class="text-gray-400">Şarkılarınızı sadece birkaç tıklamayla yükleyin. Kolaylaştırılmış sürecimiz müziğinizi saatler değil, dakikalar içinde çevrimiçi hale getirir.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div
+                    class="bg-primary-light rounded-xl p-6 border border-secondary/50 hover:border-accent/50 transition-colors duration-300">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-r from-accent to-accent-dark rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Önce Topluluk</h3>
+                    <p class="text-gray-400">Müzik severlerle bağlantı kurun, favori sanatçılarınızı takip edin ve müzik aracılığıyla anlamlı ilişkiler kurun.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div
+                    class="bg-primary-light rounded-xl p-6 border border-secondary/50 hover:border-accent/50 transition-colors duration-300">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-r from-accent to-accent-dark rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Akıllı Keşif</h3>
+                    <p class="text-gray-400">Zeki algoritmalarımız zevkinize uygun yeni müzikler keşfetmenize yardımcı olur ve sizi bir sonraki favori sanatçınızla tanıştırır.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div
+                    class="bg-primary-light rounded-xl p-6 border border-secondary/50 hover:border-accent/50 transition-colors duration-300">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-r from-accent to-accent-dark rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="headphones" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Yüksek Kaliteli Ses</h3>
+                    <p class="text-gray-400">Yüksek kaliteli akış teknolojimizle müziği duyulması gerektiği şekilde deneyimleyin.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div
+                    class="bg-primary-light rounded-xl p-6 border border-secondary/50 hover:border-accent/50 transition-colors duration-300">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-r from-accent to-accent-dark rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="list-music" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Özel Çalma Listeleri</h3>
+                    <p class="text-gray-400">Hikayenizi anlatan çalma listeleri oluşturun ve paylaşın. Herhangi bir an veya ruh hali için mükemmel ses parçalarını düzenleyin.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div
+                    class="bg-primary-light rounded-xl p-6 border border-secondary/50 hover:border-accent/50 transition-colors duration-300">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-r from-accent to-accent-dark rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="globe" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-3">Küresel Erişim</h3>
+                    <p class="text-gray-400">Müziğinizi dünya çapındaki dinleyicilerle paylaşın. Engelleri yıkın ve dünya genelindeki hayranlarınızla bağlantı kurun.</p>
+                </div>
+                <!-- Stats Section -->
+                <div
+                    class="bg-gradient-to-r from-accent/10 to-accent-dark/10 rounded-2xl p-8 border border-accent/20 mb-20">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-white mb-4">Platform İstatistikleri</h2>
+                        <p class="text-gray-300">Büyüyen topluluğumuzdan gerçek zamanlı sayılar</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                        <div>
+                            <div class="text-3xl font-bold text-accent mb-2">
+                                @if (Model?.TotalUsers > 0)
+                                {
+                                    @Model.TotalUsers.ToString("N0")
+                                }
+                                else
+                                {
+                                    <span class="text-gray-500">0</span>
+                                }
+                            </div>
+                            <div class="text-gray-300">Aktif Kullanıcılar</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-accent mb-2">
+                                @if (Model?.TotalTracks > 0)
+                                {
+                                    @Model.TotalTracks.ToString("N0")
+                                }
+                                else
+                                {
+                                    <span class="text-gray-500">0</span>
+                                }
+                            </div>
+                            <div class="text-gray-300">Yüklenen Şarkılar</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-accent mb-2">
+                                @if (Model?.TotalAlbums > 0)
+                                {
+                                    @Model.TotalAlbums.ToString("N0")
+                                }
+                                else
+                                {
+                                    <span class="text-gray-500">0</span>
+                                }
+                            </div>
+                            <div class="text-gray-300">Oluşturulan Albümler</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-accent mb-2">
+                                @if (Model?.TotalPlaylists > 0)
+                                {
+                                    @Model.TotalPlaylists.ToString("N0")
+                                }
+                                else
+                                {
+                                    <span class="text-gray-500">0</span>
+                                }
+                            </div>
+                            <div class="text-gray-300">Paylaşılan Çalma Listeleri</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-accent mb-2">
+                                @if (Model?.TotalPlays > 0)
+                                {
+                                    @Model.TotalPlays.ToString("N0")
+                                }
+                                else
+                                {
+                                    <span class="text-gray-500">0</span>
+                                }
+                            </div>
+                            <div class="text-gray-300">Çalınan Şarkılar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology Section -->
+            <div class="mb-20">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-white mb-4">Modern Teknoloji ile Geliştirildi</h2>
+                    <p class="text-gray-400 text-lg">En iyi kullanıcı deneyimi için son teknoloji ile destekleniyor</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="bg-primary-light rounded-xl p-8 border border-secondary/50">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center mr-4">
+                                <i data-lucide="code" class="w-6 h-6 text-accent"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">Modern Teknoloji Yığını</h3>
+                        </div>
+                        <p class="text-gray-300 mb-4">
+                            Ölçeklenebilirlik, güvenlik ve performansı sağlamak için ASP.NET Core, Entity Framework ve modern web teknolojileri ile geliştirildi.
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm">ASP.NET
+                                Core</span>
+                            <span class="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm">Entity
+                                Framework</span>
+                            <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">SQL
+                                Server</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-primary-light rounded-xl p-8 border border-secondary/50">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mr-4">
+                                <i data-lucide="shield-check" class="w-6 h-6 text-green-400"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white">Güvenlik ve Gizlilik</h3>
+                        </div>
+                        <p class="text-gray-300 mb-4">
+                            Verileriniz endüstri standardı güvenlik önlemleriyle korunur. Gizliliğinize saygı duyuyoruz ve kişisel bilgilerinizi asla paylaşmıyoruz.
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">HTTPS</span>
+                            <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">OAuth
+                                2.0</span>
+                            <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm">GDPR
+                                Uyumlu</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Section -->
+            <div class="mb-20">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-white mb-4">Ekiple Tanışın</h2>
+                    <p class="text-gray-400 text-lg">Eryth'in arkasındaki tutkulu bireyler</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-primary-light rounded-xl p-6 border border-secondary/50 text-center">
+                        <div
+                            class="w-20 h-20 bg-gradient-to-r from-accent to-accent-dark rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i data-lucide="user" class="w-10 h-10 text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Eryth Ekibi</h3>
+                        <p class="text-accent mb-3">Kurucu ve Geliştirici</p>
+                        <p class="text-gray-400 text-sm">
+                            Yenilikçi müzik deneyimleri yaratma ve insanları teknoloji aracılığıyla bir araya getirme konusunda tutkulu.
+                        </p>
+                    </div>
+
+                    <div class="bg-primary-light rounded-xl p-6 border border-secondary/50 text-center">
+                        <div
+                            class="w-20 h-20 bg-gradient-to-r from-accent to-accent-light rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i data-lucide="palette" class="w-10 h-10 text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Tasarım Ekibi</h3>
+                        <p class="text-accent mb-3">UI/UX Tasarımcıları</p>
+                        <p class="text-gray-400 text-sm">
+                            Müzik keşfini keyifli bir deneyim haline getiren güzel ve sezgisel arayüzler hazırlıyor.
+                        </p>
+                    </div>
+
+                    <div class="bg-primary-light rounded-xl p-6 border border-secondary/50 text-center">
+                        <div
+                            class="w-20 h-20 bg-gradient-to-r from-accent-dark to-accent rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i data-lucide="headphones" class="w-10 h-10 text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Ses Mühendisleri</h3>
+                        <p class="text-accent mb-3">Ses Uzmanları</p>
+                        <p class="text-gray-400 text-sm">
+                            Son teknoloji akış teknolojisiyle en yüksek kaliteli ses deneyimini sağlıyor.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact & Community Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="bg-primary-light rounded-2xl p-8 border border-secondary/50">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center mr-4">
+                            <i data-lucide="mail" class="w-6 h-6 text-accent"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">İletişime Geçin</h2>
+                    </div>
+                    <p class="text-gray-300 mb-6">
+                        Sorularınız, önerileriniz var mı yoksa sadece merhaba demek mi istiyorsunuz? Sizden haber almayı çok isteriz!
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <i data-lucide="mail" class="w-5 h-5 text-accent mr-3"></i>
+                            <span class="text-gray-300">contact@eryth.com</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="message-circle" class="w-5 h-5 text-accent mr-3"></i>
+                            <span class="text-gray-300">7/24 canlı destek mevcut</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i data-lucide="globe" class="w-5 h-5 text-accent mr-3"></i>
+                            <span class="text-gray-300">Dünya çapında erişilebilir</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-primary-light rounded-2xl p-8 border border-secondary/50">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center mr-4">
+                            <i data-lucide="users" class="w-6 h-6 text-accent"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Topluluğumuza Katılın</h2>
+                    </div>
+                    <p class="text-gray-300 mb-6">
+                        Büyüyen sanatçılar ve müzik meraklıları topluluğunun bir parçası olun. Paylaşın, keşfedin ve bağlantı kurun!
+                    </p>
+                    <div class="space-y-3">
+                        <a href="/Auth/Register"
+                            class="flex items-center justify-center w-full bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105">
+                            <i data-lucide="user-plus" class="w-5 h-5 mr-2"></i>
+                            Bugün Eryth'e Katıl
+                        </a>
+                        <p class="text-center text-gray-400 text-sm">
+                            Zaten hesabınız var mı?
+                            <a href="/Auth/Login" class="text-accent hover:text-accent-dark transition-colors">Buradan giriş yapın</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@section Scripts {
+        <script>
+            // Initialize Lucide icons
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            });
+        </script>
+}

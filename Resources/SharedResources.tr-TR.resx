@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- General UI -->
+  <data name="Welcome" xml:space="preserve">
+    <value>Hoş Geldiniz</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Ana Sayfa</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Ara</value>
+  </data>
+  <data name="Explore" xml:space="preserve">
+    <value>Keşfet</value>
+  </data>
+  <data name="Library" xml:space="preserve">
+    <value>Kütüphane</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Ayarlar</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Dil</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>İngilizce</value>
+  </data>
+  <data name="Turkish" xml:space="preserve">
+    <value>Türkçe</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Sil</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Düzenle</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Kaldır</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Oluştur</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Güncelle</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Giriş Yap</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Kayıt Ol</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Çıkış Yap</value>
+  </data>
+  
+  <!-- Music Related -->
+  <data name="Play" xml:space="preserve">
+    <value>Oynat</value>
+  </data>
+  <data name="Pause" xml:space="preserve">
+    <value>Duraklat</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>Durdur</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Sonraki</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Önceki</value>
+  </data>
+  <data name="Tracks" xml:space="preserve">
+    <value>Şarkılar</value>
+  </data>
+  <data name="Albums" xml:space="preserve">
+    <value>Albümler</value>
+  </data>
+  <data name="Artists" xml:space="preserve">
+    <value>Sanatçılar</value>
+  </data>
+  <data name="Playlists" xml:space="preserve">
+    <value>Çalma Listeleri</value>
+  </data>
+  <data name="Genres" xml:space="preserve">
+    <value>Türler</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Süre</value>
+  </data>
+  <data name="ReleaseDate" xml:space="preserve">
+    <value>Çıkış Tarihi</value>
+  </data>
+  <data name="Like" xml:space="preserve">
+    <value>Beğen</value>
+  </data>
+  <data name="Unlike" xml:space="preserve">
+    <value>Beğenmekten Vazgeç</value>
+  </data>
+  <data name="Follow" xml:space="preserve">
+    <value>Takip Et</value>
+  </data>
+  <data name="Unfollow" xml:space="preserve">
+    <value>Takibi Bırak</value>
+  </data>
+  <data name="Share" xml:space="preserve">
+    <value>Paylaş</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>İndir</value>
+  </data>
+  
+  <!-- Messages and Notifications -->
+  <data name="Messages" xml:space="preserve">
+    <value>Mesajlar</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>Bildirimler</value>
+  </data>
+  <data name="SendMessage" xml:space="preserve">
+    <value>Mesaj Gönder</value>
+  </data>
+  <data name="NewMessage" xml:space="preserve">
+    <value>Yeni Mesaj</value>
+  </data>
+  <data name="MarkAsRead" xml:space="preserve">
+    <value>Okundu İşaretle</value>
+  </data>
+  
+  <!-- Account Settings -->
+  <data name="AccountSettings" xml:space="preserve">
+    <value>Hesap Ayarları</value>
+  </data>
+  <data name="PersonalInformation" xml:space="preserve">
+    <value>Kişisel Bilgiler</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>Kullanıcı Adı</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>E-posta</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Şifre</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>Şifreyi Onayla</value>
+  </data>
+  <data name="CurrentPassword" xml:space="preserve">
+    <value>Mevcut Şifre</value>
+  </data>
+  <data name="NewPassword" xml:space="preserve">
+    <value>Yeni Şifre</value>
+  </data>
+  <data name="ChangePassword" xml:space="preserve">
+    <value>Şifre Değiştir</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>Ad</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>Soyad</value>
+  </data>
+  <data name="Bio" xml:space="preserve">
+    <value>Biyografi</value>
+  </data>
+  <data name="DateOfBirth" xml:space="preserve">
+    <value>Doğum Tarihi</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Konum</value>
+  </data>
+  <data name="Website" xml:space="preserve">
+    <value>Web Sitesi</value>
+  </data>
+  
+  <!-- Success/Error Messages -->
+  <data name="Success" xml:space="preserve">
+    <value>Başarılı</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Uyarı</value>
+  </data>
+  <data name="Info" xml:space="preserve">
+    <value>Bilgi</value>
+  </data>
+  <data name="SettingsUpdatedSuccessfully" xml:space="preserve">
+    <value>Ayarlar başarıyla güncellendi</value>
+  </data>
+  <data name="LanguageUpdatedSuccessfully" xml:space="preserve">
+    <value>Dil başarıyla güncellendi</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Geçersiz kimlik bilgileri</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Kullanıcı bulunamadı</value>
+  </data>
+  <data name="EmailAlreadyExists" xml:space="preserve">
+    <value>E-posta zaten kullanımda</value>
+  </data>
+  <data name="UsernameAlreadyExists" xml:space="preserve">
+    <value>Kullanıcı adı zaten kullanımda</value>
+  </data>
+  
+  <!-- Validation Messages -->
+  <data name="Required" xml:space="preserve">
+    <value>Gerekli</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Geçersiz e-posta formatı</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Şifre en az 6 karakter olmalıdır</value>
+  </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>Şifreler eşleşmiyor</value>
+  </data>
+  <data name="InvalidDate" xml:space="preserve">
+    <value>Geçersiz tarih</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>Geçersiz URL</value>
+  </data>
+  
+  <!-- Comments -->
+  <data name="Comments" xml:space="preserve">
+    <value>Yorumlar</value>
+  </data>
+  <data name="AddComment" xml:space="preserve">
+    <value>Yorum Ekle</value>
+  </data>
+  <data name="PostComment" xml:space="preserve">
+    <value>Yorum Gönder</value>
+  </data>
+  <data name="DeleteComment" xml:space="preserve">
+    <value>Yorumu Sil</value>
+  </data>
+  <data name="EditComment" xml:space="preserve">
+    <value>Yorumu Düzenle</value>
+  </data>
+  <data name="ReplyToComment" xml:space="preserve">
+    <value>Yorumu Yanıtla</value>
+  </data>
+  <data name="ShowReplies" xml:space="preserve">
+    <value>Yanıtları Göster</value>
+  </data>
+  <data name="HideReplies" xml:space="preserve">
+    <value>Yanıtları Gizle</value>
+  </data>
+  
+  <!-- Time/Date -->
+  <data name="Today" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>Dün</value>
+  </data>
+  <data name="ThisWeek" xml:space="preserve">
+    <value>Bu Hafta</value>
+  </data>
+  <data name="ThisMonth" xml:space="preserve">
+    <value>Bu Ay</value>
+  </data>
+  <data name="ThisYear" xml:space="preserve">
+    <value>Bu Yıl</value>
+  </data>
+  
+  <!-- Loading States -->
+  <data name="Loading" xml:space="preserve">
+    <value>Yükleniyor</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Kaydediliyor</value>
+  </data>
+  <data name="Processing" xml:space="preserve">
+    <value>İşleniyor</value>
+  </data>
+  <data name="PleaseWait" xml:space="preserve">
+    <value>Lütfen bekleyin</value>
+  </data>
+</root>

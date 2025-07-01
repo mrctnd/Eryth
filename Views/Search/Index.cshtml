@@ -1,0 +1,492 @@
+@model Eryth.ViewModels.SearchPageViewModel
+@{
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model.Query) ? "Arama" : $"Arama: {Model.Query}";
+}
+
+<style>
+    /* Custom animations for modern look */
+    @@keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes pulse-glow {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(255, 85, 0, 0.3);
+        }
+        50% {
+            box-shadow: 0 0 40px rgba(255, 85, 0, 0.6);
+        }
+    }
+    
+    @@keyframes gentle-bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+    
+    .animate-fade-in-up {
+        animation: fade-in-up 0.8s ease-out forwards;
+    }
+    
+    .delay-100 { animation-delay: 100ms; }
+    .delay-200 { animation-delay: 200ms; }
+    .delay-300 { animation-delay: 300ms; }
+    .delay-400 { animation-delay: 400ms; }
+    
+    .hover\:scale-102:hover {
+        transform: scale(1.02);
+    }
+    
+    /* Custom gradient text */
+    .bg-clip-text {
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    
+    /* Modern card hover effects */
+    .search-card {
+        background: linear-gradient(145deg, rgba(45, 45, 45, 0.8), rgba(30, 30, 30, 0.9));
+        border: 1px solid rgba(255, 85, 0, 0.1);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .search-card:hover {
+        background: linear-gradient(145deg, rgba(55, 55, 55, 0.9), rgba(40, 40, 40, 0.95));
+        border-color: rgba(255, 85, 0, 0.3);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 85, 0, 0.1);
+    }
+</style>
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section with enhanced background -->
+    <div class="relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #1DB954 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-20 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 py-16 relative z-10">
+            <!-- Search Header -->
+            <div class="text-center mb-12 animate-fade-in-up">
+                @if (string.IsNullOrWhiteSpace(Model.Query))
+                {                    <h1 class="text-5xl md:text-6xl font-black tracking-tight leading-none mb-6">
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white animate-pulse">Müzik</span> Ara
+                    </h1>
+                    <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                        Şarkıları, sanatçıları, albümleri ve çalma listelerini keşfedin
+                    </p>
+                }
+                else
+                {                    <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-none mb-4">
+                        Arama <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Sonuçları</span>
+                    </h1>
+                    <div class="flex items-center justify-center space-x-4 mb-6">
+                        <div class="flex items-center space-x-2 bg-muted/50 backdrop-blur-sm rounded-full px-6 py-3 border border-accent/20">
+                            <i data-lucide="search" class="w-5 h-5 text-accent"></i>
+                            <span class="text-white font-medium">@Model.Query</span>
+                        </div>
+                        @if (Model.Results.HasAnyResults)
+                        {                            <div class="flex items-center space-x-2 bg-accent/20 backdrop-blur-sm rounded-full px-4 py-2 border border-accent/30">
+                                <span class="text-accent font-bold">@Model.Results.TotalResults</span>
+                                <span class="text-gray-300 text-sm">sonuç</span>
+                            </div>
+                        }
+                    </div>
+                    @if (Model.Results.HasAnyResults)
+                    {                        <p class="text-gray-400 text-sm">
+                            @Model.Results.GetResultSummary() • @Model.Results.FormattedSearchDuration sürede bulundu
+                        </p>
+                    }
+                }
+            </div>
+        </div>
+    </div>    <div class="max-w-7xl mx-auto px-6 pb-12 -mt-8 relative z-10">
+        @if (string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <!-- Empty Search State - Enhanced -->
+            <div class="text-center py-20 animate-fade-in-up delay-200">
+                <div class="w-32 h-32 bg-gradient-to-br from-accent/20 to-black rounded-3xl mx-auto mb-8 flex items-center justify-center animate-pulse">
+                    <i data-lucide="search" class="w-16 h-16 text-accent"></i>
+                </div>                <h2 class="text-3xl font-bold text-white mb-4">Müzikal Yolculuğunuza Başlayın</h2>
+                <p class="text-gray-400 mb-8 text-lg max-w-md mx-auto">Muhteşem müzikleri keşfetmek için yukarıdaki arama çubuğuna bir sorgu girin</p>
+                <div class="max-w-2xl mx-auto">
+                    <p class="text-accent font-semibold mb-6">🔥 Trend Aramalar:</p>
+                    <div class="flex flex-wrap gap-3 justify-center">
+                        <a href="/search?q=rock" class="group px-6 py-3 bg-gradient-to-r from-muted to-black border border-muted/50 rounded-full text-gray-300 hover:text-accent hover:border-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/20">
+                            <span class="group-hover:animate-pulse">🎸 rock</span>
+                        </a>
+                        <a href="/search?q=pop" class="group px-6 py-3 bg-gradient-to-r from-muted to-black border border-muted/50 rounded-full text-gray-300 hover:text-accent hover:border-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/20">
+                            <span class="group-hover:animate-pulse">🎵 pop</span>
+                        </a>
+                        <a href="/search?q=electronic" class="group px-6 py-3 bg-gradient-to-r from-muted to-black border border-muted/50 rounded-full text-gray-300 hover:text-accent hover:border-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/20">
+                            <span class="group-hover:animate-pulse">🎛️ electronic</span>
+                        </a>
+                        <a href="/search?q=jazz" class="group px-6 py-3 bg-gradient-to-r from-muted to-black border border-muted/50 rounded-full text-gray-300 hover:text-accent hover:border-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/20">
+                            <span class="group-hover:animate-pulse">🎺 jazz</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (!Model.Results.HasAnyResults)
+        {
+            <!-- No Results State - Enhanced -->
+            <div class="text-center py-20 animate-fade-in-up delay-200">
+                <div class="w-32 h-32 bg-gradient-to-br from-red-500/20 to-black rounded-3xl mx-auto mb-8 flex items-center justify-center">
+                    <i data-lucide="search-x" class="w-16 h-16 text-red-400"></i>
+                </div>                <h2 class="text-3xl font-bold text-white mb-4">Sonuç Bulunamadı</h2>
+                <p class="text-gray-400 mb-8 text-lg">"<span class="text-accent font-semibold">@Model.Query</span>" ile eşleşen hiçbir şey bulamadık</p>
+                <div class="max-w-2xl mx-auto bg-muted/30 backdrop-blur-sm rounded-2xl p-8 border border-muted/50">
+                    <p class="text-accent font-semibold mb-4">💡 Bu önerileri deneyin:</p>
+                    <ul class="text-left space-y-3 text-gray-300">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-accent rounded-full"></div>
+                            <span>Yazımınızı kontrol edin</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-accent rounded-full"></div>
+                            <span>Daha az veya farklı anahtar kelimeler kullanın</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-accent rounded-full"></div>
+                            <span>Sanatçı isimleri veya şarkı başlıkları arayın</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-accent rounded-full"></div>
+                            <span>Daha genel terimler deneyin</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>        }
+        else
+        {
+            <!-- Search Results - Enhanced Design -->
+            <div class="space-y-16 animate-fade-in-up delay-300">
+                <!-- Tracks Section -->
+                @if (Model.Results.HasTracks)
+                {
+                    <section>
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center">
+                                    <i data-lucide="disc" class="w-6 h-6 text-white"></i>
+                                </div>                                <div>
+                                    <h2 class="text-3xl font-bold text-white">Şarkılar</h2>
+                                    <p class="text-gray-400 text-sm">@Model.Results.TrackCount sonuç@(Model.Results.TrackCount != 1 ? "" : "")</p>
+                                </div>
+                            </div>
+                            @if (Model.Results.TrackCount >= 10)
+                            {
+                                <a href="/search?q=@Uri.EscapeDataString(Model.Query)&type=tracks" class="flex items-center space-x-2 text-accent hover:text-accent-light transition-colors group">
+                                    <span class="font-medium">Tümünü gör</span>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                                </a>
+                            }
+                        </div>
+                        <div class="grid gap-4">
+                            @foreach (var track in Model.Results.Tracks)
+                            {
+                                <div class="search-card rounded-2xl p-6 hover:scale-102 transition-all duration-300 group">
+                                    <div class="flex items-center space-x-6">
+                                        <!-- Cover Art -->
+                                        <div class="relative w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-xl flex-shrink-0 overflow-hidden group-hover:shadow-lg group-hover:shadow-accent/20 transition-all duration-300">
+                                            @if (!string.IsNullOrEmpty(track.CoverArtUrl))
+                                            {
+                                                <img src="@track.CoverArtUrl" alt="@track.Title cover" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                                            }
+                                            else
+                                            {
+                                                <div class="w-full h-full flex items-center justify-center">
+                                                    <i data-lucide="disc" class="w-8 h-8 text-gray-500 group-hover:text-accent transition-colors"></i>
+                                                </div>
+                                            }
+                                            <!-- Play Button Overlay -->
+                                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm">
+                                                <button class="text-white hover:text-accent hover:scale-110 transition-all duration-200" onclick="playTrack('@track.Id')">
+                                                    <i data-lucide="play" class="w-6 h-6"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Track Info -->
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="text-white font-semibold truncate text-lg mb-1">
+                                                <a href="@Url.Action("Details", "Track", new { id = track.Id })" class="hover:text-accent transition-colors">@track.Title</a>
+                                            </h3>
+                                            <p class="text-gray-400 truncate">
+                                                <a href="@Url.Action("Profile", "User", new { username = track.ArtistUsername })" class="hover:text-accent transition-colors font-medium">@track.ArtistName</a>
+                                                @if (!string.IsNullOrEmpty(track.AlbumName))
+                                                {
+                                                    <span class="text-gray-500"> • @track.AlbumName</span>
+                                                }
+                                            </p>
+                                            <div class="flex items-center space-x-2 mt-2">
+                                                <span class="px-3 py-1 bg-accent/20 text-accent text-xs rounded-full font-medium">@track.Genre</span>
+                                                <span class="text-gray-500 text-sm">@track.FormattedDuration</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Track Stats -->
+                                        <div class="flex items-center space-x-6 text-sm text-gray-400">
+                                            <div class="flex items-center space-x-2 bg-muted/30 rounded-lg px-3 py-2">
+                                                <i data-lucide="play" class="w-4 h-4 text-accent"></i>
+                                                <span class="font-semibold text-white">@track.PlayCount.ToString("N0")</span>
+                                            </div>
+                                            <div class="flex items-center space-x-2 bg-muted/30 rounded-lg px-3 py-2">
+                                                <i data-lucide="heart" class="w-4 h-4 @(track.IsLikedByCurrentUser ? "text-red-500 fill-current" : "text-accent")"></i>
+                                                <span class="font-semibold text-white">@track.LikeCount.ToString("N0")</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div class="flex items-center space-x-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            @await Component.InvokeAsync("LikeButton", new { entityId = track.Id, entityType = "Track", isLiked = track.IsLikedByCurrentUser, likeCount = track.LikeCount })
+                                            <button class="text-gray-400 hover:text-accent transition-colors p-2 rounded-lg hover:bg-accent/10" title="Add to playlist">
+                                                <i data-lucide="plus" class="w-5 h-5"></i>
+                                            </button>
+                                            <button class="text-gray-400 hover:text-accent transition-colors p-2 rounded-lg hover:bg-accent/10" title="More options">
+                                                <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </section>                }                <!-- Albums Section -->
+                @if (Model.Results.HasAlbums)
+                {
+                    <section>
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl flex items-center justify-center">
+                                    <i data-lucide="disc-3" class="w-6 h-6 text-white"></i>
+                                </div>                                <div>
+                                    <h2 class="text-3xl font-bold text-white">Albümler</h2>
+                                    <p class="text-gray-400 text-sm">@Model.Results.AlbumCount sonuç@(Model.Results.AlbumCount != 1 ? "" : "")</p>
+                                </div>
+                            </div>
+                            @if (Model.Results.AlbumCount >= 10)
+                            {
+                                <a href="/search?q=@Uri.EscapeDataString(Model.Query)&type=albums" class="flex items-center space-x-2 text-accent hover:text-accent-light transition-colors group">
+                                    <span class="font-medium">Tümünü gör</span>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                                </a>
+                            }
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                            @foreach (var album in Model.Results.Albums)
+                            {
+                                <div class="group animate-fade-in-up" style="animation-delay: @(Model.Results.Albums.ToList().IndexOf(album) * 100)ms">
+                                    <a href="@Url.Action("Details", "Album", new { id = album.Id })" class="block">
+                                        <div class="relative bg-gradient-to-br from-gray-800 to-black rounded-2xl overflow-hidden mb-4 aspect-square border border-muted/30 hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 hover:scale-105">
+                                            @if (!string.IsNullOrEmpty(album.CoverArtUrl))
+                                            {
+                                                <img src="@album.CoverArtUrl" alt="@album.Title cover" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                            }
+                                            else
+                                            {
+                                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900/30 to-gray-900">
+                                                    <i data-lucide="disc-3" class="w-16 h-16 text-purple-400 group-hover:text-purple-300 transition-colors duration-300"></i>
+                                                </div>
+                                            }
+                                            <!-- Play Button Overlay -->
+                                            <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm">
+                                                <button class="bg-purple-500 text-white rounded-full p-4 hover:bg-purple-600 transform hover:scale-110 transition-all duration-200 shadow-xl">
+                                                    <i data-lucide="play" class="w-6 h-6"></i>
+                                                </button>
+                                            </div>
+                                            <!-- Album Info Badge -->
+                                            <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <span class="text-white text-xs font-medium">@album.TrackCount şarkı</span>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-white font-semibold text-base truncate group-hover:text-purple-400 transition-colors duration-300 mb-1">@album.Title</h3>
+                                        <p class="text-gray-400 text-sm truncate font-medium group-hover:text-gray-300 transition-colors">@album.ArtistName</p>
+                                        <div class="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                                            <span class="bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">@album.TrackCount şarkı@(album.TrackCount != 1 ? "" : "")</span>
+                                            <span>•</span>
+                                            <span>@album.RelativeDate</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </section>
+                }                <!-- Playlists Section -->
+                @if (Model.Results.HasPlaylists)
+                {
+                    <section>
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center">
+                                    <i data-lucide="list-music" class="w-6 h-6 text-white"></i>
+                                </div>                                <div>
+                                    <h2 class="text-3xl font-bold text-white">Çalma Listeleri</h2>
+                                    <p class="text-gray-400 text-sm">@Model.Results.PlaylistCount sonuç@(Model.Results.PlaylistCount != 1 ? "" : "")</p>
+                                </div>
+                            </div>
+                            @if (Model.Results.PlaylistCount >= 10)
+                            {
+                                <a href="/search?q=@Uri.EscapeDataString(Model.Query)&type=playlists" class="flex items-center space-x-2 text-accent hover:text-accent-light transition-colors group">
+                                    <span class="font-medium">Tümünü gör</span>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                                </a>
+                            }
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                            @foreach (var playlist in Model.Results.Playlists)
+                            {
+                                <div class="group animate-fade-in-up" style="animation-delay: @(Model.Results.Playlists.ToList().IndexOf(playlist) * 100)ms">
+                                    <a href="@Url.Action("Details", "Playlist", new { id = playlist.Id })" class="block">
+                                        <div class="relative bg-gradient-to-br from-gray-800 to-black rounded-2xl overflow-hidden mb-4 aspect-square border border-muted/30 hover:border-green-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/20 hover:scale-105">
+                                            @if (!string.IsNullOrEmpty(playlist.CoverArtUrl))
+                                            {
+                                                <img src="@playlist.CoverArtUrl" alt="@playlist.Name cover" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                            }
+                                            else
+                                            {
+                                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-900/30 to-gray-900">
+                                                    <i data-lucide="list-music" class="w-16 h-16 text-green-400 group-hover:text-green-300 transition-colors duration-300"></i>
+                                                </div>
+                                            }
+                                            <!-- Play Button Overlay -->
+                                            <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-sm">
+                                                <button class="bg-green-500 text-white rounded-full p-4 hover:bg-green-600 transform hover:scale-110 transition-all duration-200 shadow-xl">
+                                                    <i data-lucide="play" class="w-6 h-6"></i>
+                                                </button>
+                                            </div>
+                                            <!-- Playlist Info Badge -->
+                                            <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <span class="text-white text-xs font-medium">@playlist.TrackCount şarkı</span>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-white font-semibold text-base truncate group-hover:text-green-400 transition-colors duration-300 mb-1">@playlist.Name</h3>
+                                        <p class="text-gray-400 text-sm truncate font-medium group-hover:text-gray-300 transition-colors">
+                                            by <span class="hover:text-green-400 transition-colors">@playlist.OwnerUsername</span>
+                                        </p>
+                                        <div class="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                                            <span class="bg-green-500/20 text-green-300 px-2 py-1 rounded-full">@playlist.TrackCount şarkı@(playlist.TrackCount != 1 ? "" : "")</span>
+                                            <span>•</span>
+                                            <span>@playlist.RelativeDate</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </section>
+                }                <!-- Users Section -->
+                @if (Model.Results.HasUsers)
+                {
+                    <section>
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center">
+                                    <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                                </div>                                <div>
+                                    <h2 class="text-3xl font-bold text-white">Sanatçılar</h2>
+                                    <p class="text-gray-400 text-sm">@Model.Results.UserCount sonuç@(Model.Results.UserCount != 1 ? "" : "")</p>
+                                </div>
+                            </div>
+                            @if (Model.Results.UserCount >= 10)
+                            {
+                                <a href="/search?q=@Uri.EscapeDataString(Model.Query)&type=users" class="flex items-center space-x-2 text-accent hover:text-accent-light transition-colors group">
+                                    <span class="font-medium">Tümünü gör</span>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                                </a>
+                            }
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            @foreach (var user in Model.Results.Users)
+                            {
+                                <div class="group animate-fade-in-up" style="animation-delay: @(Model.Results.Users.ToList().IndexOf(user) * 100)ms">
+                                    <div class="bg-gradient-to-br from-muted to-black rounded-2xl p-6 text-center hover:scale-105 transition-all duration-300 border border-muted/30 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20">
+                                        <a href="@Url.Action("Profile", "User", new { username = user.Username })" class="block">
+                                            <!-- Profile Picture -->
+                                            <div class="relative w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden bg-gradient-to-br from-blue-600/30 to-gray-700 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all duration-300">
+                                                @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                                                {
+                                                    <img src="@user.AvatarUrl" alt="@user.DisplayNameOrUsername" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                                                }
+                                                else
+                                                {
+                                                    <div class="w-full h-full flex items-center justify-center">
+                                                        <i data-lucide="user" class="w-10 h-10 text-blue-400 group-hover:text-blue-300 transition-colors"></i>
+                                                    </div>
+                                                }
+                                                <!-- Online Status Indicator -->
+                                                <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-lg"></div>
+                                            </div>
+                                            
+                                            <h3 class="text-white font-semibold text-lg truncate group-hover:text-blue-400 transition-colors duration-300 mb-1">@user.DisplayNameOrUsername</h3>
+                                            @if (!string.IsNullOrEmpty(user.Username) && user.Username != user.DisplayName)
+                                            {
+                                                <p class="text-gray-400 text-sm truncate mb-2">@@@user.Username</p>
+                                            }
+                                            @if (!string.IsNullOrEmpty(user.Bio))
+                                            {
+                                                <p class="text-gray-400 text-xs mt-2 line-clamp-2 leading-relaxed">@user.Bio</p>
+                                            }
+                                            
+                                            <!-- Stats -->
+                                            <div class="flex justify-center space-x-4 mt-4">
+                                                <div class="text-center">
+                                                    <div class="text-white font-bold text-lg">@user.FollowerCount.ToString("N0")</div>
+                                                    <div class="text-gray-400 text-xs">takipçi</div>
+                                                </div>
+                                                <div class="w-px bg-gray-700"></div>
+                                                <div class="text-center">
+                                                    <div class="text-white font-bold text-lg">@user.TotalContent</div>
+                                                    <div class="text-gray-400 text-xs">şarkı</div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        
+                                        @if (!user.IsCurrentUser)
+                                        {
+                                            <div class="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                @await Component.InvokeAsync("FollowButton", new { userId = user.Id, isFollowing = user.IsFollowedByCurrentUser })
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </section>
+                }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/search-suggest.js"></script>
+    <script>
+        // Play track function for search results
+        function playTrack(trackId) {
+            if (window.musicPlayer) {
+                window.musicPlayer.loadAndPlay(trackId);
+            }
+        }
+        
+        // Initialize icons after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        });
+    </script>
+}

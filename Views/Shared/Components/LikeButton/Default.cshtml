@@ -1,0 +1,12 @@
+@model Eryth.ViewModels.LikeButtonViewModel
+
+<button class="like-button text-gray-400 hover:text-red-500 transition-colors p-1 @(Model.ButtonClass ?? "")" 
+        data-track-id="@Model.TrackId" 
+        data-is-liked="@Model.IsLiked.ToString().ToLower()"
+        title="@(Model.IsLiked ? "Unlike" : "Like") this track">
+    <i data-lucide="heart" class="w-4 h-4 @(Model.IsLiked ? "text-red-500 fill-current" : "")"></i>
+    @if (Model.ShowCount && Model.LikeCount > 0)
+    {
+        <span class="ml-1 text-xs">@Model.LikeCount.ToString("N0")</span>
+    }
+</button>

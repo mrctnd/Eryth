@@ -1,0 +1,208 @@
+@model EditTrackViewModel
+@using Eryth.Models.Enums
+@using Eryth.ViewModels
+
+@{
+    ViewData["Title"] = "Parça Düzenle";
+    Layout = "_Layout";
+}
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #00ff87 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-20 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="max-w-4xl mx-auto px-6 py-16 relative z-10">
+            <div class="text-center mb-12">                <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-none mb-6">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Parça Düzenle</span>
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                    Parça bilgilerinizi ve ayarlarınızı güncelleyin
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="max-w-4xl mx-auto px-6 pb-12 -mt-8 relative z-10">
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data" class="space-y-8">
+                <input asp-for="Id" type="hidden" />
+                
+                <!-- Basic Information -->
+                <div class="space-y-6">                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-4">Parça Bilgileri</h2>
+                    
+                    <!-- Title -->
+                    <div>
+                        <label asp-for="Title" class="block text-sm font-medium text-white mb-2">Parça Başlığı *</label>
+                        <input asp-for="Title" type="text" 
+                               class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                               placeholder="Parça başlığını girin">
+                        <span asp-validation-for="Title" class="text-red-400 text-sm"></span>
+                    </div>
+
+                    <!-- Description -->
+                    <div>                        <label asp-for="Description" class="block text-sm font-medium text-white mb-2">Açıklama</label>
+                        <textarea asp-for="Description" rows="4" 
+                                  class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                                  placeholder="Parçanızı açıklayın..."></textarea>
+                        <span asp-validation-for="Description" class="text-red-400 text-sm"></span>
+                    </div>
+
+                    <!-- Genre and SubGenre -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>                            <label asp-for="Genre" class="block text-sm font-medium text-white mb-2">Tür *</label>                            <select asp-for="Genre" 
+                                    class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300">
+                                <option value="">Bir tür seçin</option>
+                                <option value="@Genre.Pop">Pop</option>
+                                <option value="@Genre.Rock">Rock</option>
+                                <option value="@Genre.HipHop">Hip Hop</option>                                <option value="@Genre.Electronic">Elektronik</option>
+                                <option value="@Genre.Jazz">Jazz</option>
+                                <option value="@Genre.Classical">Klasik</option>
+                                <option value="@Genre.Country">Country</option>
+                                <option value="@Genre.RnB">R&B</option>
+                                <option value="@Genre.Reggae">Reggae</option>
+                                <option value="@Genre.Folk">Folk</option>
+                                <option value="@Genre.Blues">Blues</option>
+                                <option value="@Genre.Metal">Metal</option>
+                                <option value="@Genre.Punk">Punk</option>
+                                <option value="@Genre.Alternative">Alternatif</option>
+                                <option value="@Genre.Indie">Indie</option>
+                                <option value="@Genre.World">Dünya</option>
+                                <option value="@Genre.Soundtrack">Film Müziği</option>
+                                <option value="@Genre.Other">Diğer</option>
+                            </select>
+                            <span asp-validation-for="Genre" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <div>                            <label asp-for="SubGenre" class="block text-sm font-medium text-white mb-2">Alt Tür</label>
+                            <input asp-for="SubGenre" type="text" 
+                                   class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                                   placeholder="Alt tür girin">
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div>                        <label asp-for="Tags" class="block text-sm font-medium text-white mb-2">Etiketler</label>
+                        <input asp-for="Tags" type="text" 
+                               class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                               placeholder="Etiketleri virgülle ayırarak girin">
+                        <p class="text-gray-400 text-sm mt-1">Etiketleri virgülle ayırın (örn: "enerjik, dans, yaz")</p>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-4">Ek Bilgiler</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Composer -->
+                        <div>                            <label asp-for="Composer" class="block text-sm font-medium text-white mb-2">Besteci</label>
+                            <input asp-for="Composer" type="text" 
+                                   class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                                   placeholder="Besteci adını girin">
+                        </div>
+
+                        <!-- Producer -->
+                        <div>                            <label asp-for="Producer" class="block text-sm font-medium text-white mb-2">Yapımcı</label>
+                            <input asp-for="Producer" type="text" 
+                                   class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                                   placeholder="Yapımcı adını girin">
+                        </div>
+
+                        <!-- Lyricist -->
+                        <div>                            <label asp-for="Lyricist" class="block text-sm font-medium text-white mb-2">Söz Yazarı</label>
+                            <input asp-for="Lyricist" type="text" 
+                                   class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                                   placeholder="Söz yazarı adını girin">
+                        </div>
+
+                        <!-- Copyright -->
+                        <div>                            <label asp-for="Copyright" class="block text-sm font-medium text-white mb-2">Telif Hakkı</label>
+                            <input asp-for="Copyright" type="text" 
+                                   class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                                   placeholder="Telif hakkı bilgilerini girin">
+                        </div>
+                    </div>
+
+                    <!-- Release Date -->
+                    <div>
+                        <label asp-for="ReleaseDate" class="block text-sm font-medium text-white mb-2">Yayın Tarihi</label>
+                        <input asp-for="ReleaseDate" type="date" 
+                               class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300">
+                    </div>
+                </div>
+
+                <!-- Cover Image -->
+                <div class="space-y-6">                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-4">Kapak Resmi</h2>
+                    
+                    <div>
+                        <label asp-for="NewCoverImage" class="block text-sm font-medium text-white mb-2">Kapak Resmini Güncelle</label>
+                        <input asp-for="NewCoverImage" type="file" accept="image/*"
+                               class="w-full bg-white/5 text-white border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300">
+                        <p class="text-gray-400 text-sm mt-1">Parçanız için yeni bir kapak resmi yükleyin (isteğe bağlı)</p>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white border-b border-white/10 pb-4">Parça Ayarları</h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Explicit Content -->
+                        <div class="flex items-center space-x-3">
+                            <input asp-for="IsExplicit" type="checkbox" 
+                                   class="w-5 h-5 text-accent bg-white/5 border border-white/20 rounded focus:ring-accent focus:ring-2">
+                            <label asp-for="IsExplicit" class="text-white font-medium">Müstehcen içerik barındırır</label>
+                        </div>
+
+                        <!-- Allow Comments -->
+                        <div class="flex items-center space-x-3">
+                            <input asp-for="AllowComments" type="checkbox" 
+                                   class="w-5 h-5 text-accent bg-white/5 border border-white/20 rounded focus:ring-accent focus:ring-2">
+                            <label asp-for="AllowComments" class="text-white font-medium">Yorumlara izin ver</label>
+                        </div>
+
+                        <!-- Allow Downloads -->
+                        <div class="flex items-center space-x-3">
+                            <input asp-for="AllowDownloads" type="checkbox" 
+                                   class="w-5 h-5 text-accent bg-white/5 border border-white/20 rounded focus:ring-accent focus:ring-2">
+                            <label asp-for="AllowDownloads" class="text-white font-medium">İndirmelere izin ver</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-between pt-8 border-t border-white/10">
+                    <a href="@Url.Action("MyTracks", "Track")" 
+                       class="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-300">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        <span>Parçalarıma Geri Dön</span>
+                    </a>
+
+                    <div class="flex items-center space-x-4">
+                        <button type="button" onclick="window.location.href='/Track/MyTracks'"                                class="px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/20">
+                            İptal
+                        </button>
+                        <button type="submit" 
+                                class="inline-flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-dark text-white hover:from-accent-dark hover:to-accent px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1">
+                            <i data-lucide="save" class="w-5 h-5"></i>
+                            <span>Değişiklikleri Kaydet</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

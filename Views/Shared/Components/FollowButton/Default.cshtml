@@ -1,0 +1,25 @@
+@model Eryth.ViewModels.FollowButtonViewModel
+
+<button class="follow-button transition-all duration-200 px-4 py-2 rounded-lg text-sm font-medium @(Model.CssClasses)" 
+        data-entity-id="@Model.EntityId" 
+        data-entity-type="@Model.EntityType"
+        data-is-followed="@Model.IsFollowed.ToString().ToLower()">
+    @if (Model.IsFollowed)
+    {
+        <span class="bg-gray-600 text-white hover:bg-gray-700 px-3 py-1 rounded">
+            <i data-lucide="user-check" class="w-4 h-4 inline mr-1"></i>
+            Following
+        </span>
+    }
+    else
+    {
+        <span class="bg-accent text-white hover:bg-accent-dark px-3 py-1 rounded">
+            <i data-lucide="user-plus" class="w-4 h-4 inline mr-1"></i>
+            Follow
+        </span>
+    }
+    @if (Model.ShowCount && Model.FollowerCount.HasValue)
+    {
+        <span class="ml-2 text-xs text-gray-500">@Model.FollowerCount.Value.ToString("N0") followers</span>
+    }
+</button>

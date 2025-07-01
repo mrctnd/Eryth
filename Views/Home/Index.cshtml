@@ -1,0 +1,350 @@
+@model Eryth.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<style>
+    /* Custom animations for modern look */
+    @@keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes pulse-glow {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(255, 85, 0, 0.3);
+        }
+        50% {
+            box-shadow: 0 0 40px rgba(255, 85, 0, 0.6);
+        }
+    }
+    
+    .animate-fade-in-up {
+        animation: fade-in-up 0.8s ease-out forwards;
+    }
+    
+    .delay-100 { animation-delay: 100ms; }
+    .delay-200 { animation-delay: 200ms; }
+    .delay-300 { animation-delay: 300ms; }
+    .delay-400 { animation-delay: 400ms; }
+    .delay-1000 { animation-delay: 1000ms; }
+    
+    .hover\:scale-102:hover {
+        transform: scale(1.02);
+    }
+    
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Custom gradient text animations */
+    .bg-clip-text {
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    
+    /* Loading skeleton animation */
+    @@keyframes skeleton-loading {
+        0% {
+            background-position: -200px 0;
+        }
+        100% {
+            background-position: calc(200px + 100%) 0;
+        }
+    }
+    
+    .skeleton {
+        background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+        background-size: 200px 100%;
+        animation: skeleton-loading 1.5s infinite;
+    }
+</style>
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section - Enhanced and more attractive -->
+    <div class="relative overflow-hidden to-black pt-8 pb-16">
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #1DB954 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-20 left-10 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-48 h-48 bg-accent/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="max-w-6xl mx-auto px-6 relative z-10">
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <div class="text-center space-y-8">
+                    <div class="space-y-6">                        
+                        <h1 class="text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-none">
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white animate-pulse">Müziği</span>
+                            <br />hiç olmadığı gibi dinleyin
+                        </h1>
+                        <p class="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
+                            Milyonlarca şarkıyı keşfedin, çalma listeleri oluşturun ve <span class="text-accent font-semibold">Eryth</span>'de dünya çapındaki sanatçılarla bağlantı kurun.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center pt-12">
+                        <a href="/Auth/Register" class="group bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white px-12 py-5 rounded-full text-xl font-bold transition-all duration-300 hover:scale-105 shadow-2xl hover:shadow-accent/30 transform hover:-translate-y-1">
+                            <span class="flex items-center justify-center space-x-3">
+                                <i data-lucide="play" class="w-6 h-6 group-hover:animate-bounce"></i>
+                                <span>Ücretsiz Başla</span>
+                            </span>
+                        </a>
+                        <button onclick="showAuthModal('signin')" class="border-2 border-white/20 hover:border-accent hover:bg-accent/10 text-white hover:text-accent px-12 py-5 rounded-full text-xl font-bold transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+                            Giriş Yap
+                        </button>
+                    </div>
+                    
+                    <!-- Feature Highlights -->
+                    <div class="grid md:grid-cols-3 gap-8 pt-20 text-center">
+                        <div class="group">
+                            <div class="w-16 h-16 bg-accent/10 rounded-2xl mx-auto mb-4 flex items-center justify-center group-hover:bg-accent/20 transition-colors duration-300">
+                                <i data-lucide="headphones" class="w-8 h-8 text-accent"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Yüksek Kaliteli Ses</h3>
+                            <p class="text-gray-400">Kayıpsız ses akışıyla kristal netliğinde ses deneyimi yaşayın</p>
+                        </div>
+                        <div class="group">
+                            <div class="w-16 h-16 bg-accent/10 rounded-2xl mx-auto mb-4 flex items-center justify-center group-hover:bg-accent/20 transition-colors duration-300">
+                                <i data-lucide="users" class="w-8 h-8 text-accent"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Sanatçılarla Bağlantı</h3>
+                            <p class="text-gray-400">Favori sanatçılarınızı takip edin ve yeni yetenekleri keşfedin</p>
+                        </div>
+                        <div class="group">
+                            <div class="w-16 h-16 bg-accent/10 rounded-2xl mx-auto mb-4 flex items-center justify-center group-hover:bg-accent/20 transition-colors duration-300">
+                                <i data-lucide="list-music" class="w-8 h-8 text-accent"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Çalma Listeleri Oluştur</h3>
+                            <p class="text-gray-400">Müziğinizi düzenleyin ve arkadaşlarınızla paylaşın</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <!-- Content Section - Enhanced cards with better styling -->
+    <div class="max-w-7xl mx-auto px-6 py-16 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">            <!-- Trending Tracks - Enhanced -->
+            <div class="group bg-gradient-to-br from-muted to-black border border-muted/50 rounded-2xl p-8 hover:border-accent/30 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-accent/10">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-12 h-12 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-300">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Trend Şarkılar</h3>
+                        <p class="text-gray-400 text-sm">Bu hafta en çok çalınanlar</p>
+                    </div>
+                </div>
+                
+                @if (Model?.TrendingTracks != null && Model.TrendingTracks.Any())
+                {
+                    <div class="space-y-4">
+                        @foreach (var track in Model.TrendingTracks)
+                        {                            <div class="group/track flex items-center space-x-4 p-4 rounded-xl hover:bg-black/50 cursor-pointer transition-all duration-300 border border-transparent hover:border-accent/20" 
+                                 onclick="playTrack('@track.Id', '@Html.Raw(Html.Encode(track.Title))', '@Html.Raw(Html.Encode(track.ArtistName))', '@(track.AudioFileUrl?.StartsWith("/") == true ? track.AudioFileUrl : "/" + (track.AudioFileUrl ?? ""))', '@(track.CoverImageUrl?.StartsWith("/") == true ? track.CoverImageUrl : "/" + (track.CoverImageUrl ?? ""))')">
+                                @if (!string.IsNullOrEmpty(track.CoverImageUrl))
+                                {
+                                    <img src="@(track.CoverImageUrl?.StartsWith("/") == true ? track.CoverImageUrl : "/" + (track.CoverImageUrl ?? ""))" alt="@track.Title" class="w-16 h-16 rounded-xl object-cover group-hover/track:scale-110 transition-transform duration-300">
+                                }
+                                else
+                                {
+                                    <div class="w-16 h-16 bg-gradient-to-br from-accent/20 to-black rounded-xl flex items-center justify-center group-hover/track:scale-110 transition-transform duration-300">
+                                        <i data-lucide="music" class="w-8 h-8 text-accent"></i>
+                                    </div>
+                                }
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-white truncate group-hover/track:text-accent transition-colors duration-300 text-lg">@track.Title</p>
+                                    <p class="text-gray-400 truncate">@track.ArtistName</p>
+                                </div>
+                                <i data-lucide="play" class="w-5 h-5 text-gray-400 opacity-0 group-hover/track:opacity-100 group-hover/track:text-accent transition-all duration-300"></i>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-12">
+                        <div class="w-20 h-20 bg-gradient-to-br from-accent/20 to-black rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                            <i data-lucide="music" class="w-10 h-10 text-accent"></i>
+                        </div>
+                        <p class="text-gray-400 text-lg">Henüz trend şarkı yok</p>
+                        <p class="text-gray-500 text-sm">İlk yükleyen sen ol!</p>
+                    </div>
+                }
+            </div>            <!-- Trending Albums - Enhanced -->
+            <div class="group bg-gradient-to-br from-muted to-black border border-muted/50 rounded-2xl p-8 hover:border-accent/30 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-accent/10">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-12 h-12 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-300">
+                        <i data-lucide="disc-3" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Trend Albümler</h3>
+                        <p class="text-gray-400 text-sm">Popüler koleksiyonlar</p>
+                    </div>
+                </div>
+                
+                @if (Model?.TrendingAlbums != null && Model.TrendingAlbums.Any())
+                {
+                    <div class="space-y-4">
+                        @foreach (var album in Model.TrendingAlbums)
+                        {
+                            <div class="group/album flex items-center space-x-4 p-4 rounded-xl hover:bg-black/50 cursor-pointer transition-all duration-300 border border-transparent hover:border-accent/20" 
+                                 onclick="window.location.href='@Url.Action("Details", "Album", new { id = album.Id })'">
+                                @if (!string.IsNullOrEmpty(album.CoverImageUrl))
+                                {
+                                    <img src="@(album.CoverImageUrl?.StartsWith("/") == true ? album.CoverImageUrl : "/" + (album.CoverImageUrl ?? ""))" alt="@album.Title" class="w-16 h-16 rounded-xl object-cover group-hover/album:scale-110 transition-transform duration-300">
+                                }
+                                else
+                                {
+                                    <div class="w-16 h-16 bg-gradient-to-br from-accent/20 to-black rounded-xl flex items-center justify-center group-hover/album:scale-110 transition-transform duration-300">
+                                        <i data-lucide="disc-3" class="w-8 h-8 text-accent"></i>
+                                    </div>
+                                }
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-white truncate group-hover/album:text-accent transition-colors duration-300 text-lg">@album.Title</p>
+                                    <p class="text-gray-400 truncate">@album.ArtistName</p>
+                                </div>
+                                <i data-lucide="play" class="w-5 h-5 text-gray-400 opacity-0 group-hover/album:opacity-100 group-hover/album:text-accent transition-all duration-300"></i>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-12">
+                        <div class="w-20 h-20 bg-gradient-to-br from-accent/20 to-black rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                            <i data-lucide="disc-3" class="w-10 h-10 text-accent"></i>
+                        </div>
+                        <p class="text-gray-400 text-lg">Henüz trend albüm yok</p>
+                        <p class="text-gray-500 text-sm">İlk albümünü yükle!</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Popular Playlists - Enhanced -->
+            <div class="group bg-gradient-to-br from-muted to-black border border-muted/50 rounded-2xl p-8 hover:border-accent/30 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-accent/10">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-12 h-12 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-300">
+                        <i data-lucide="list-music" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Popüler Çalma Listeleri</h3>
+                        <p class="text-gray-400 text-sm">Topluluk favorileri</p>
+                    </div>
+                </div>
+                
+                @if (Model?.PopularPlaylists != null && Model.PopularPlaylists.Any())
+                {
+                    <div class="space-y-4">
+                        @foreach (var playlist in Model.PopularPlaylists)
+                        {
+                            <div class="group/playlist flex items-center space-x-4 p-4 rounded-xl hover:bg-black/50 cursor-pointer transition-all duration-300 border border-transparent hover:border-accent/20" 
+                                 onclick="window.location.href='@Url.Action("Details", "Playlist", new { id = playlist.Id })'">
+                                @if (!string.IsNullOrEmpty(playlist.CoverImageUrl))
+                                {
+                                    <img src="@(playlist.CoverImageUrl?.StartsWith("/") == true ? playlist.CoverImageUrl : "/" + (playlist.CoverImageUrl ?? ""))" alt="@playlist.Name" class="w-16 h-16 rounded-xl object-cover group-hover/playlist:scale-110 transition-transform duration-300">
+                                }
+                                else
+                                {
+                                    <div class="w-16 h-16 bg-gradient-to-br from-accent/20 to-black rounded-xl flex items-center justify-center group-hover/playlist:scale-110 transition-transform duration-300">
+                                        <i data-lucide="list-music" class="w-8 h-8 text-accent"></i>
+                                    </div>
+                                }
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-white truncate group-hover/playlist:text-accent transition-colors duration-300 text-lg">@playlist.Name</p>
+                                    <p class="text-gray-400 truncate">@playlist.OwnerUsername</p>
+                                </div>
+                                <i data-lucide="play" class="w-5 h-5 text-gray-400 opacity-0 group-hover/playlist:opacity-100 group-hover/playlist:text-accent transition-all duration-300"></i>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-12">
+                        <div class="w-20 h-20 bg-gradient-to-br from-accent/20 to-black rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                            <i data-lucide="list-music" class="w-10 h-10 text-accent"></i>
+                        </div>
+                        <p class="text-gray-400 text-lg">Henüz popüler çalma listesi yok</p>
+                        <p class="text-gray-500 text-sm">İlkini sen oluştur!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <!-- Platform Stats Section with enhanced design -->
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="mt-24 text-center max-w-7xl mx-auto px-6 pb-20">
+            <div class="animate-fade-in-up delay-400">
+                <h2 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 mb-4">
+                    Müzik Devrimine Katılın
+                </h2>
+                <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+                    Büyüyen müzik meraklıları topluluğunun bir parçası olun
+                </p>
+                @if (Model?.Stats != null)
+                {
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                        <div class="group bg-gradient-to-br from-muted to-black backdrop-blur-sm rounded-2xl p-8 border border-muted/50 hover:border-accent/50 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-accent/20">
+                            <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-dark rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <i data-lucide="music" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <div class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-dark mb-3 group-hover:scale-110 transition-transform duration-300">
+                                @Model.Stats.TotalTracks.ToString("N0")
+                            </div>
+                            <div class="text-gray-300 text-lg font-medium">Mevcut Şarkılar</div>
+                            <div class="text-gray-500 text-sm mt-1">Akışa hazır</div>
+                        </div>
+                        <div class="group bg-gradient-to-br from-muted to-black backdrop-blur-sm rounded-2xl p-8 border border-muted/50 hover:border-accent/50 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-accent/20">
+                            <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-dark rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <i data-lucide="disc-3" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <div class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-dark mb-3 group-hover:scale-110 transition-transform duration-300">
+                                @Model.Stats.TotalAlbums.ToString("N0")
+                            </div>
+                            <div class="text-gray-300 text-lg font-medium">Oluşturulan Albümler</div>
+                            <div class="text-gray-500 text-sm mt-1">Yetenekli sanatçılar tarafından</div>
+                        </div>
+                        <div class="group bg-gradient-to-br from-muted to-black backdrop-blur-sm rounded-2xl p-8 border border-muted/50 hover:border-accent/50 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-accent/20">
+                            <div class="w-16 h-16 bg-gradient-to-br from-accent to-accent-dark rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <i data-lucide="list-music" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <div class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-dark mb-3 group-hover:scale-110 transition-transform duration-300">
+                                @Model.Stats.TotalPlaylists.ToString("N0")
+                            </div>
+                            <div class="text-gray-300 text-lg font-medium">Paylaşılan Çalma Listeleri</div>
+                            <div class="text-gray-500 text-sm mt-1">Düzenlenmiş koleksiyonlar</div>
+                        </div>
+                    </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-gray-400 py-16">
+                            <div class="w-24 h-24 bg-gradient-to-br from-gray-700 to-gray-800 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-pulse">
+                                <i data-lucide="bar-chart-3" class="w-12 h-12 opacity-50"></i>
+                            </div>
+                            <p class="text-2xl font-bold mb-2">Platform istatistikleri yakında mevcut olacak</p>
+                            <p class="text-gray-500">Size harika görüşler sunmak için veri topluyoruz</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/js/home/home.js"></script>

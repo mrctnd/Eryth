@@ -1,0 +1,184 @@
+@model Eryth.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Hesap Oluştur";
+    Layout = "_Layout";
+}
+
+<div class="min-h-screen bg-primary flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <div class="flex justify-center">
+                <h1 class="text-accent text-4xl font-bold">Eryth</h1>
+            </div>            <h2 class="mt-6 text-center text-3xl font-extrabold text-white">
+                Hesabınızı oluşturun
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-400">
+                Veya 
+                <a href="@Url.Action("Login")" class="font-medium text-accent hover:text-accent-dark">
+                    giriş yapın
+                </a>
+                mevcut hesabınıza
+            </p>
+        </div>
+        
+        <!-- Display validation errors -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="rounded-md bg-red-900/50 border border-red-700 p-4">
+                <div class="text-sm text-red-300">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <p>@error.ErrorMessage</p>
+                    }
+                </div>
+            </div>
+        }
+        
+        <!-- Display success messages -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="rounded-md bg-green-900/50 border border-green-700 p-4">
+                <div class="text-sm text-green-300">
+                    @TempData["Success"]
+                </div>
+            </div>
+        }
+        
+        <!-- Display error messages -->
+        @if (TempData["Error"] != null)
+        {
+            <div class="rounded-md bg-red-900/50 border border-red-700 p-4">
+                <div class="text-sm text-red-300">
+                    @TempData["Error"]
+                </div>
+            </div>
+        }
+
+        <form class="mt-8 space-y-6" action="@Url.Action("Register")" method="post">
+            @Html.AntiForgeryToken()
+            
+            <div class="space-y-4">
+                <div>                    <label for="Username" class="block text-sm font-medium text-gray-300">
+                        Kullanıcı Adı
+                    </label>
+                    <div class="mt-1">
+                        <input id="Username" name="Username" type="text" autocomplete="username" required 
+                               value="@Model?.Username"
+                               minlength="3" maxlength="50" pattern="^[a-zA-Z0-9_-]+$"
+                               class="appearance-none relative block w-full px-3 py-2 bg-secondary border border-gray-600 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm" 
+                               placeholder="Kullanıcı adı seçin">
+                    </div>
+                    <p class="mt-1 text-xs text-gray-400">3-50 karakter, sadece harfler, rakamlar, alt çizgi ve tire</p>
+                </div>
+                
+                <div>
+                    <label for="Email" class="block text-sm font-medium text-gray-300">
+                        E-posta Adresi
+                    </label>
+                    <div class="mt-1">
+                        <input id="Email" name="Email" type="email" autocomplete="email" required 
+                               value="@Model?.Email"
+                               maxlength="254"
+                               class="appearance-none relative block w-full px-3 py-2 bg-secondary border border-gray-600 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm" 
+                               placeholder="E-posta adresinizi girin">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="DisplayName" class="block text-sm font-medium text-gray-300">
+                        Görünen Ad (İsteğe Bağlı)
+                    </label>
+                    <div class="mt-1">
+                        <input id="DisplayName" name="DisplayName" type="text" 
+                               value="@Model?.DisplayName"
+                               maxlength="100"
+                               class="appearance-none relative block w-full px-3 py-2 bg-secondary border border-gray-600 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm" 
+                               placeholder="Görünen adınız">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="Password" class="block text-sm font-medium text-gray-300">
+                        Şifre
+                    </label>
+                    <div class="mt-1">
+                        <input id="Password" name="Password" type="password" autocomplete="new-password" required 
+                               minlength="8" maxlength="100"
+                               class="appearance-none relative block w-full px-3 py-2 bg-secondary border border-gray-600 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm" 
+                               placeholder="Şifre oluşturun">
+                    </div>
+                    <p class="mt-1 text-xs text-gray-400">Büyük harf, küçük harf, rakam ve özel karakter içermelidir</p>
+                </div>
+                
+                <div>
+                    <label for="ConfirmPassword" class="block text-sm font-medium text-gray-300">
+                        Şifre Onayı
+                    </label>
+                    <div class="mt-1">
+                        <input id="ConfirmPassword" name="ConfirmPassword" type="password" autocomplete="new-password" required 
+                               class="appearance-none relative block w-full px-3 py-2 bg-secondary border border-gray-600 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm" 
+                               placeholder="Şifrenizi onaylayın">
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex items-start">
+                    <input id="AgreeToTerms" name="AgreeToTerms" type="checkbox" value="true" required
+                           @(Model?.AgreeToTerms == true ? "checked" : "")
+                           class="h-4 w-4 text-accent focus:ring-accent border-gray-600 rounded bg-secondary mt-1">
+                    <input name="AgreeToTerms" type="hidden" value="false" />                    <label for="AgreeToTerms" class="ml-2 block text-sm text-gray-300">
+                        <a href="/terms" class="text-accent hover:underline">Hizmet Şartları</a> ve <a href="/privacy" class="text-accent hover:underline">Gizlilik Politikası</a>'nı kabul ediyorum
+                    </label>
+                </div>
+                
+                <div class="flex items-center">
+                    <input id="SubscribeToNewsletter" name="SubscribeToNewsletter" type="checkbox" value="true"
+                           @(Model?.SubscribeToNewsletter == true ? "checked" : "")
+                           class="h-4 w-4 text-accent focus:ring-accent border-gray-600 rounded bg-secondary">
+                    <input name="SubscribeToNewsletter" type="hidden" value="false" />
+                    <label for="SubscribeToNewsletter" class="ml-2 block text-sm text-gray-300">
+                        Bültene abone ol (isteğe bağlı)
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-accent hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-colors duration-200">
+                    Hesap Oluştur
+                </button>
+            </div>
+        </form>
+        
+        <div class="text-center">
+            <p class="text-sm text-gray-400">
+                Zaten hesabınız var mı? 
+                <a href="@Url.Action("Login")" class="font-medium text-accent hover:text-accent-dark">
+                    Giriş yapın
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time password confirmation validation
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('Password');
+    const confirmPasswordField = document.getElementById('ConfirmPassword');
+    
+    function validatePasswordMatch() {
+        if (passwordField.value && confirmPasswordField.value) {            if (passwordField.value !== confirmPasswordField.value) {
+                confirmPasswordField.setCustomValidity('Şifreler eşleşmiyor');
+            } else {
+                confirmPasswordField.setCustomValidity('');
+            }
+        }
+    }
+    
+    if (passwordField && confirmPasswordField) {
+        passwordField.addEventListener('input', validatePasswordMatch);
+        confirmPasswordField.addEventListener('input', validatePasswordMatch);
+    }
+});
+</script>

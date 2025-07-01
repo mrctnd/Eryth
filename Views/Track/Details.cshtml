@@ -1,0 +1,560 @@
+@model TrackViewModel
+@using Eryth.Models.Enums
+@using Eryth.ViewModels
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="min-h-screen bg-black text-white relative overflow-hidden">
+    <!-- Green Background Effects -->
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute top-20 right-20 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-40 left-20 w-80 h-80 bg-green-400/8 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-green-600/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div class="absolute top-10 left-10 w-40 h-40 bg-green-300/6 rounded-full blur-xl animate-pulse delay-500"></div>
+        <div class="absolute bottom-20 right-40 w-60 h-60 bg-green-500/7 rounded-full blur-2xl animate-pulse delay-1500"></div>
+    </div>
+    
+    <!-- Back Button -->
+    <div class="container mx-auto px-6 pt-8 relative z-10">
+        <button onclick="history.back()" class="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Geri</span>
+        </button>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="container mx-auto px-6 py-8 relative z-10">
+        <div class="bg-black/60 backdrop-blur-lg rounded-xl border border-gray-700/50 overflow-hidden mb-8">
+            <div class="p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Cover Art -->
+                    <div class="lg:col-span-1">
+                        <div class="relative aspect-square rounded-xl overflow-hidden shadow-xl group">
+                            @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+                            {
+                                <img src="@(Model.CoverImageUrl?.StartsWith("/") == true ? Model.CoverImageUrl : "/" + (Model.CoverImageUrl ?? ""))" 
+                                     alt="@Model.Title" 
+                                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            }
+                            else
+                            {
+                                <div class="w-full h-full bg-gradient-to-br from-green-600/20 to-green-800/10 flex items-center justify-center">
+                                    <svg class="w-24 h-24 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.894A1 1 0 0018 16V3z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            }
+                            
+                            <!-- Play Button Overlay -->
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                                <button class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white p-6 rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg"
+                                        onclick="playTrackFromDetails('@Model.Id', '@Html.Raw(Html.Encode(Model.Title).Replace("'", "\\'"))', '@Html.Raw(Html.Encode(Model.ArtistName).Replace("'", "\\'"))', '@(Model.AudioFileUrl?.StartsWith("/") == true ? Model.AudioFileUrl : "/" + (Model.AudioFileUrl ?? ""))', '@(Model.CoverImageUrl?.StartsWith("/") == true ? Model.CoverImageUrl : "/" + (Model.CoverImageUrl ?? ""))')">
+                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Track Info -->
+                    <div class="lg:col-span-2 flex flex-col justify-center">
+                        <div class="space-y-6">
+                            <!-- Track Title -->
+                            <div>
+                                <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-none mb-4">
+                                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-white">@Model.Title</span>
+                                </h1>
+                                @if (Model.IsExplicit)
+                                {
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                        Explicit
+                                    </span>
+                                }
+                            </div>
+
+                            <!-- Artist Info -->
+                            <div class="flex items-center space-x-4">
+                                <h2 class="text-2xl font-semibold text-gray-300">
+                                    by <a href="@Url.Action("Profile", "User", new { username = Model.ArtistName })" 
+                                         class="text-green-400 hover:text-green-300 transition-colors duration-200">
+                                        @Model.ArtistName
+                                    </a>
+                                </h2>
+                            </div>
+
+                            <!-- Stats Row -->
+                            <div class="flex items-center space-x-8 text-sm text-gray-400">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="font-medium">@Model.PlayCount.ToString("N0") çalınma</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="font-medium">@Model.LikeCount beğeni</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span class="font-medium">@Model.CommentCount yorum</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="font-medium">@Model.FormattedDuration</span>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex items-center space-x-4">
+                                <!-- Like Button -->
+                                @await Html.PartialAsync("_LikeButton", new Eryth.ViewModels.LikeButtonViewModel 
+                                { 
+                                    TrackId = Model.Id, 
+                                    IsLiked = Model.IsLikedByCurrentUser, 
+                                    LikeCount = (int)Model.LikeCount,
+                                    ButtonClass = "px-6 py-3 rounded-xl font-semibold bg-black/50 text-gray-300 hover:bg-black/70"
+                                })
+
+                                <!-- Share Button -->
+                                <button class="flex items-center space-x-2 px-6 py-3 bg-black/50 text-gray-300 hover:bg-black/70 rounded-xl font-semibold transition-all duration-300"
+                                        onclick="shareTrack('@Model.Id', '@Html.Raw(Html.Encode(Model.Title).Replace("'", "\\'"))')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                                    </svg>
+                                    <span>Paylaş</span>
+                                </button>
+
+                                @if (Model.CanDownload)
+                                {
+                                    <!-- Download Button -->
+                                    <button class="flex items-center space-x-2 px-6 py-3 bg-black/50 text-gray-300 hover:bg-black/70 rounded-xl font-semibold transition-all duration-300"
+                                            onclick="downloadTrack('@Model.Id')">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <span>İndir</span>
+                                    </button>
+                                }
+
+                                @if (Model.CanEdit)
+                                {
+                                    <!-- Edit Button -->
+                                    <button class="flex items-center space-x-2 px-6 py-3 bg-black/50 text-gray-300 hover:bg-black/70 rounded-xl font-semibold transition-all duration-300"
+                                            onclick="openEditModal()">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>Düzenle</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="container mx-auto px-6 pb-8 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Track Details -->
+                <div class="bg-black/60 backdrop-blur-lg rounded-xl border border-gray-700/50 p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white">Parça Bilgileri</h3>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="mb-6">
+                            <h4 class="text-lg font-semibold text-gray-300 mb-3">Açıklama</h4>
+                            <p class="text-gray-400 leading-relaxed">@Model.Description</p>
+                        </div>
+                    }
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Column -->
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-gray-500 text-sm font-medium">Tür</span>
+                                <p class="text-white font-medium">@Model.Genre</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.SubGenre))
+                            {
+                                <div>
+                                    <span class="text-gray-500 text-sm font-medium">Alt Tür</span>
+                                    <p class="text-white font-medium">@Model.SubGenre</p>
+                                </div>
+                            }
+                            <div>
+                                <span class="text-gray-500 text-sm font-medium">Çıkış Tarihi</span>
+                                <p class="text-white font-medium">@Model.ReleaseDate.ToString("MMMM dd, yyyy")</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Composer))
+                            {
+                                <div>
+                                    <span class="text-gray-500 text-sm font-medium">Besteci</span>
+                                    <p class="text-white font-medium">@Model.Composer</p>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="space-y-4">
+                            @if (!string.IsNullOrEmpty(Model.Producer))
+                            {
+                                <div>
+                                    <span class="text-gray-500 text-sm font-medium">Prodüktör</span>
+                                    <p class="text-white font-medium">@Model.Producer</p>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Lyricist))
+                            {
+                                <div>
+                                    <span class="text-gray-500 text-sm font-medium">Söz Yazarı</span>
+                                    <p class="text-white font-medium">@Model.Lyricist</p>
+                                </div>
+                            }
+                            <div>
+                                <span class="text-gray-500 text-sm font-medium">Yüklenme Tarihi</span>
+                                <p class="text-white font-medium">@Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Copyright))
+                            {
+                                <div>
+                                    <span class="text-gray-500 text-sm font-medium">Telif Hakkı</span>
+                                    <p class="text-white font-medium">@Model.Copyright</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.AlbumTitle))
+                    {
+                        <div class="mt-6 pt-6 border-t border-gray-700/50">
+                            <span class="text-gray-400 text-sm font-medium">Albümün Parçası</span>
+                            <p class="text-green-400 font-medium cursor-pointer hover:text-green-300 transition-colors duration-200"
+                               onclick="location.href='@Url.Action("Details", "Album", new { id = Model.AlbumId })'">
+                                @Model.AlbumTitle
+                            </p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Comments Section -->
+                @if (Model.AllowComments)
+                {
+                    <div class="bg-black/60 backdrop-blur-lg rounded-xl border border-gray-700/50 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mr-4">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-bold text-white">Yorumlar (@Model.CommentCount)</h3>
+                            </div>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <button class="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors duration-200"
+                                        onclick="showCommentForm()">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span>Yorum Ekle</span>
+                                </button>
+                            }
+                        </div>
+
+                        <!-- Comment Form -->
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div id="comment-form" class="hidden mb-6 p-4 bg-black/30 rounded-xl border border-gray-600/50">
+                                @Html.AntiForgeryToken()
+                                <textarea id="comment-text" 
+                                          class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 resize-none" 
+                                          rows="3" 
+                                          placeholder="Bu parça hakkındaki düşüncelerinizi paylaşın..."></textarea>
+                                <div class="flex items-center justify-end space-x-3 mt-3">
+                                    <button onclick="hideCommentForm()" 
+                                            class="px-4 py-2 text-gray-400 hover:text-white transition-colors duration-200">
+                                        İptal
+                                    </button>
+                                    <button onclick="submitComment()" 
+                                            class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors duration-200">
+                                        Yorumu Gönder
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Comments List -->
+                        <div id="comments-container">
+                            <!-- Comments will be loaded here via AJAX -->
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Artist Card -->
+                <div class="bg-black/60 backdrop-blur-lg rounded-xl border border-gray-700/50 p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Sanatçı</h3>
+                    </div>
+                    <div class="flex items-center space-x-4 mb-4" id="artist-info">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-600/20 to-green-800/10 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-semibold">@Model.ArtistName</h4>
+                            <p class="text-gray-400 text-sm">Sanatçı</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mb-4" id="artist-stats">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-400">Toplam Parça</span>
+                            <span class="text-white font-medium">-</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-400">Takipçi</span>
+                            <span class="text-white font-medium">-</span>
+                        </div>
+                    </div>
+                    <a href="@Url.Action("Profile", "User", new { username = Model.ArtistName })" 
+                       id="view-profile-link"
+                       class="w-full block text-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors duration-200">
+                        Profili Görüntüle
+                    </a>
+                </div>
+
+                <!-- Track Stats -->
+                <div class="bg-black/60 backdrop-blur-lg rounded-xl border border-gray-700/50 p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">İstatistikler</h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-white font-semibold">@Model.PlayCount.ToString("N0")</p>
+                                    <p class="text-gray-500 text-xs">Toplam Çalınma</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-white font-semibold">@Model.LikeCount</p>
+                                    <p class="text-gray-500 text-xs">Beğeni</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-white font-semibold">@Model.CommentCount</p>
+                                    <p class="text-gray-500 text-xs">Yorumlar</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Tracks -->
+                <div class="bg-black/60 backdrop-blur-lg rounded-xl border border-gray-700/50 p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.894A1 1 0 0018 16V3z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">@Model.ArtistName'dan Daha Fazla</h3>
+                    </div>
+                    <div class="space-y-3" id="related-tracks">
+                        <!-- Related tracks will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+@if (Model.CanEdit)
+{
+    <div id="edit-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50" onclick="closeEditModal(event)">
+        <div class="bg-black/90 backdrop-blur-md rounded-xl border border-gray-700/50 p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">Parçayı Düzenle</h2>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="edit-form" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="track-id" value="@Model.Id" />
+
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">Başlık</label>
+                    <input type="text" id="edit-title" value="@Model.Title" 
+                           class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200" 
+                           required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-white mb-2">Açıklama</label>
+                    <textarea id="edit-description" rows="3"
+                              class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none">@Model.Description</textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-2">Tür</label>
+                        <select id="edit-genre" 
+                                class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200">
+                            @foreach (var genre in Enum.GetValues<Eryth.Models.Enums.Genre>())
+                            {
+                                <option value="@genre" selected="@(Model.Genre == genre)">@genre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-2">Alt Tür</label>
+                        <input type="text" id="edit-subgenre" value="@Model.SubGenre" 
+                               class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-2">Besteci</label>
+                        <input type="text" id="edit-composer" value="@Model.Composer" 
+                               class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-2">Prodüktör</label>
+                        <input type="text" id="edit-producer" value="@Model.Producer" 
+                               class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-2">Söz Yazarı</label>
+                        <input type="text" id="edit-lyricist" value="@Model.Lyricist" 
+                               class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-2">Telif Hakkı</label>
+                        <input type="text" id="edit-copyright" value="@Model.Copyright" 
+                               class="w-full bg-black/50 text-white border border-gray-600/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="edit-explicit" @(Model.IsExplicit ? "checked" : "") 
+                               class="w-4 h-4 text-green-600 bg-black/50 border-gray-600/50 rounded focus:ring-green-500 focus:ring-2">
+                        <span class="text-white">Açık İçerik</span>
+                    </label>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeEditModal()" 
+                            class="px-6 py-2 text-gray-400 hover:text-white transition-colors duration-200">                            İptal
+                    </button>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors duration-200">                            Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Debug Model data
+        console.log('Model.Id:', '@Model.Id');
+        console.log('Model.ArtistId:', '@Model.ArtistId');
+        console.log('Model.ArtistName:', '@Model.ArtistName');
+        
+        // Check if ArtistId is empty or invalid
+        var artistIdString = '@Model.ArtistId';
+        console.log('ArtistId string:', artistIdString);
+        console.log('ArtistId length:', artistIdString.length);
+        console.log('Is ArtistId empty GUID?', artistIdString === '00000000-0000-0000-0000-000000000000');
+        
+        // Track data for JavaScript - use JSON serialization
+        window.trackData = @Html.Raw(Json.Serialize(new { 
+            id = Model.Id.ToString(), 
+            artistId = Model.ArtistId.ToString(), 
+            artistName = Model.ArtistName 
+        }));
+        console.log('trackData initialized:', window.trackData);
+    </script>
+    <script src="~/js/track/trackDetails.js"></script>
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+}

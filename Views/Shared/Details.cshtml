@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #00ff87 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-20 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-6xl font-black tracking-tight leading-none mb-6">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Details</span>
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                    Content details and information
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="max-w-6xl mx-auto px-6 pb-12 -mt-8 relative z-10">
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+            <div class="p-8">
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-gradient-to-br from-accent/20 to-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="info" class="w-8 h-8 text-accent"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-white mb-3">Details Page</h3>
+                    <p class="text-gray-400 max-w-md mx-auto leading-relaxed">
+                        This is a generic details page. Specific content will be loaded based on the request.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+    });
+</script>

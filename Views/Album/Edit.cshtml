@@ -1,0 +1,204 @@
+@model Eryth.ViewModels.AlbumViewModel
+@{
+    ViewData["Title"] = $"{Model.Title} Düzenle";
+}
+
+<div class="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] bg-repeat"></div>
+    </div>
+
+    <div class="relative">
+        <div class="container mx-auto px-4 py-8 max-w-4xl">
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="bg-gradient-to-r from-primary-light/20 to-accent/10 backdrop-blur-sm rounded-2xl p-8 border border-secondary/30">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-accent to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <i data-lucide="edit" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <div>                                <h1 class="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                                    Albümü Düzenle
+                                </h1>
+                                <p class="text-gray-400 text-lg mt-1">Albüm bilgilerinizi güncelleyin</p>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Details", "Album", new { id = Model.Id })" 
+                           class="group bg-secondary/50 hover:bg-secondary text-white px-6 py-3 rounded-xl transition-all duration-300 border border-secondary hover:border-accent/30 flex items-center space-x-2">
+                            <i data-lucide="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300"></i>
+                            <span>Albüme Dön</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="bg-gradient-to-r from-primary-light/50 to-secondary/30 backdrop-blur-sm rounded-2xl p-8 border border-secondary/30">
+                <form asp-action="Edit" asp-controller="Album" method="post" enctype="multipart/form-data" class="space-y-8">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ArtistId" />
+                    <input type="hidden" asp-for="CreatedAt" />
+                    <input type="hidden" asp-for="TotalPlayCount" />
+                    <input type="hidden" asp-for="TotalLikeCount" />
+
+                    <!-- Album Title -->
+                    <div class="space-y-3">                        <label asp-for="Title" class="block text-sm font-medium text-gray-300">
+                            Albüm Başlığı <span class="text-red-400">*</span>
+                        </label>
+                        <input asp-for="Title" 
+                               class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                               placeholder="Albüm başlığını girin..." />
+                        <span asp-validation-for="Title" class="text-red-400 text-sm"></span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="space-y-3">
+                        <label asp-for="Description" class="block text-sm font-medium text-gray-300">
+                            Açıklama
+                        </label>
+                        <textarea asp-for="Description" 
+                                  rows="4"
+                                  class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300 resize-none" 
+                                  placeholder="Albümünüzü tanımlayın..."></textarea>
+                        <span asp-validation-for="Description" class="text-red-400 text-sm"></span>
+                    </div>
+
+                    <!-- Two-column layout for remaining fields -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Release Date -->
+                        <div class="space-y-3">
+                            <label asp-for="ReleaseDate" class="block text-sm font-medium text-gray-300">
+                                Çıkış Tarihi <span class="text-red-400">*</span>
+                            </label>
+                            <input asp-for="ReleaseDate" 
+                                   type="date"
+                                   class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" />
+                            <span asp-validation-for="ReleaseDate" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <!-- Primary Genre -->
+                        <div class="space-y-3">                            <label asp-for="PrimaryGenre" class="block text-sm font-medium text-gray-300">
+                                Ana Tür <span class="text-red-400">*</span>
+                            </label>
+                            <select asp-for="PrimaryGenre" 
+                                    class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300">
+                                <option value="Pop">Pop</option>
+                                <option value="Rock">Rock</option>
+                                <option value="HipHop">Hip Hop</option>
+                                <option value="Electronic">Electronic</option>
+                                <option value="Jazz">Jazz</option>
+                                <option value="Classical">Classical</option>
+                                <option value="Country">Country</option>
+                                <option value="Blues">Blues</option>
+                                <option value="Reggae">Reggae</option>
+                                <option value="Folk">Folk</option>
+                                <option value="Metal">Metal</option>
+                                <option value="Punk">Punk</option>
+                                <option value="Funk">Funk</option>
+                                <option value="Soul">Soul</option>
+                                <option value="RnB">R&B</option>
+                                <option value="Alternative">Alternative</option>
+                                <option value="Indie">Indie</option>
+                                <option value="World">World</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="PrimaryGenre" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <!-- Record Label -->
+                        <div class="space-y-3">                            <label asp-for="RecordLabel" class="block text-sm font-medium text-gray-300">
+                                Plak Şirketi
+                            </label>
+                            <input asp-for="RecordLabel" 
+                                   class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                                   placeholder="Plak şirketi adı..." />
+                            <span asp-validation-for="RecordLabel" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <!-- Copyright -->
+                        <div class="space-y-3">
+                            <label asp-for="Copyright" class="block text-sm font-medium text-gray-300">
+                                Telif Hakkı
+                            </label>
+                            <input asp-for="Copyright" 
+                                   class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" 
+                                   placeholder="Telif hakkı bilgisi..." />
+                            <span asp-validation-for="Copyright" class="text-red-400 text-sm"></span>
+                        </div>
+                    </div>
+
+                    <!-- Cover Image -->
+                    <div class="space-y-3">                        <label class="block text-sm font-medium text-gray-300">
+                            Kapak Görseli
+                        </label>
+                        <div class="flex items-center space-x-4">
+                            @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+                            {
+                                <div class="w-20 h-20 rounded-xl overflow-hidden">
+                                    <img src="/@Model.CoverImageUrl.TrimStart('/')" alt="Mevcut kapak" class="w-full h-full object-cover">
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="w-20 h-20 bg-gradient-to-br from-accent/20 to-accent/10 rounded-xl flex items-center justify-center">
+                                    <i data-lucide="image" class="w-8 h-8 text-accent"></i>
+                                </div>
+                            }
+                            <div class="flex-1">
+                                <input type="file" 
+                                       name="CoverImage" 
+                                       accept="image/*"
+                                       class="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-black hover:file:bg-accent-dark transition-all duration-300" />
+                                <p class="text-gray-400 text-sm mt-1">Yeni kapak görseli yükleyin (isteğe bağlı)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Explicit Content Checkbox -->
+                    <div class="flex items-center space-x-3">
+                        <input asp-for="IsExplicit" 
+                               type="checkbox"
+                               class="w-5 h-5 text-accent bg-black/50 border border-white/20 rounded focus:ring-accent focus:ring-2" />                        <label asp-for="IsExplicit" class="text-gray-300">
+                            Bu albüm müstehcen içerik içeriyor
+                        </label>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-4 pt-6 border-t border-secondary/30">
+                        <a href="@Url.Action("Details", "Album", new { id = Model.Id })" 
+                           class="flex-1 bg-secondary/50 hover:bg-secondary text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 text-center">
+                            İptal
+                        </a>
+                        <button type="submit" 
+                                class="flex-1 bg-gradient-to-r from-accent to-orange-600 hover:from-orange-600 hover:to-accent text-black px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105">
+                            Değişiklikleri Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initialize Lucide icons
+            if (typeof lucide !== "undefined") {
+                lucide.createIcons();
+            }
+
+            // Add form submission loading state
+            const form = document.querySelector('form');
+            const submitButton = document.querySelector('button[type="submit"]');
+            
+            form.addEventListener('submit', function() {                submitButton.innerHTML = '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2 inline-block"></div>Kaydediliyor...';
+                submitButton.disabled = true;
+            });
+        });
+    </script>
+}

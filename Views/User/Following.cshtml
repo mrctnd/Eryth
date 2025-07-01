@@ -1,0 +1,133 @@
+@model IEnumerable<Eryth.ViewModels.UserViewModel>
+@{
+    ViewData["Title"] = "Takip Edilenler";
+    var username = ViewBag.Username as string;
+}
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #00ff87 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-20 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-6xl font-black tracking-tight leading-none mb-6">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Takip Edilenler</span>
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                    @if (!string.IsNullOrEmpty(username))
+                    {
+                        <span><span class="text-accent font-medium">@username</span> tarafından takip edilenler</span>
+                    }
+                    else
+                    {
+                        <span>Harika sanatçıları keşfedin ve bağlantı kurun</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="max-w-6xl mx-auto px-6 pb-12 -mt-8 relative z-10">
+        @if (Model.Any())
+        {
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    @foreach (var user in Model)
+                    {
+                        <div class="group bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 hover:bg-white/10 hover:border-accent/30 transition-all duration-300 transform hover:-translate-y-1">
+                            <!-- User Avatar -->
+                            <div class="flex items-center space-x-4 mb-6">
+                                @if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+                                {
+                                    <div class="relative">
+                                        <img src="@(user.ProfileImageUrl.StartsWith("/") ? user.ProfileImageUrl : "/" + user.ProfileImageUrl)" 
+                                             alt="@user.DisplayNameOrUsername" 
+                                             class="w-16 h-16 rounded-full object-cover ring-2 ring-accent/20 group-hover:ring-accent/40 transition-all duration-300">
+                                        <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center ring-2 ring-accent/20 group-hover:ring-accent/40 transition-all duration-300">
+                                        <i data-lucide="user" class="w-8 h-8 text-accent"></i>
+                                    </div>
+                                }
+
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-white font-bold text-lg truncate group-hover:text-accent transition-colors duration-300">
+                                        <a href="@Url.Action("Profile", "User", new { username = user.Username })" 
+                                           class="hover:text-accent transition-colors duration-200">
+                                            @user.DisplayNameOrUsername
+                                        </a>
+                                    </h3>
+                                    <p class="text-gray-400 text-sm">@@user.Username</p>
+                                    @if (!string.IsNullOrEmpty(user.Bio))
+                                    {
+                                        <p class="text-gray-500 text-xs mt-2 line-clamp-2">@user.Bio</p>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- User Stats -->
+                            <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                                <div class="bg-white/5 rounded-lg p-3">
+                                    <div class="text-white font-bold text-lg">@user.FollowerCount</div>
+                                    <div class="text-gray-400 text-xs">Takipçi</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-3">
+                                    <div class="text-white font-bold text-lg">@user.TrackCount</div>
+                                    <div class="text-gray-400 text-xs">Parçalar</div>
+                                </div>
+                                <div class="bg-white/5 rounded-lg p-3">
+                                    <div class="text-white font-bold text-lg">@user.PlaylistCount</div>
+                                    <div class="text-gray-400 text-xs">Çalma Listeleri</div>
+                                </div>
+                            </div>                            <!-- Actions -->
+                            <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                                @{
+                                    var followButtonModel = FollowButtonViewModel.ForUser(user.Id, user.IsFollowedByCurrentUser, null, false);
+                                    followButtonModel.CssClasses = "px-4 py-2 text-sm";
+                                }
+                                @await Html.PartialAsync("_FollowButton", followButtonModel)
+                                
+                                <a href="@Url.Action("Profile", "User", new { username = user.Username })" 
+                                   class="text-gray-400 hover:text-accent transition-colors duration-200">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-12 text-center">
+                <div class="w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="users" class="w-10 h-10 text-accent"></i>
+                </div>                <h2 class="text-2xl font-bold text-white mb-4">Henüz Kimse Takip Edilmiyor</h2>
+                <p class="text-gray-400 mb-8 max-w-md mx-auto">
+                    Yeni müzikler keşfetmek ve en son çıkışlardan haberdar olmak için sanatçıları takip etmeye başlayın.
+                </p>
+                <a href="@Url.Action("Index", "Explore")" 
+                   class="inline-flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-dark text-white hover:from-accent-dark hover:to-accent px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                    <span>Sanatçıları Keşfet</span>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/user/following.js"></script>
+}

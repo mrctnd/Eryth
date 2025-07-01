@@ -1,0 +1,197 @@
+@model IEnumerable<NotificationViewModel>
+@using Eryth.Models.Enums
+@using Eryth.ViewModels
+@{
+    ViewData["Title"] = "Bildirimler";
+}
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #00ff87 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-20 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+            <div class="text-center mb-12">                <h1 class="text-5xl md:text-6xl font-black tracking-tight leading-none mb-6">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Bildirimler</span>
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                    En son aktiviteleriniz ve etkileşimlerinizle ilgili güncel kalın
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Content -->
+    <div class="max-w-4xl mx-auto px-6 pb-12 -mt-8 relative z-10">
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+            <!-- Header with Actions -->
+            <div class="border-b border-white/10 p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-accent to-accent-dark rounded-lg flex items-center justify-center">
+                            <i data-lucide="bell" class="w-4 h-4 text-white"></i>
+                        </div>                        <h2 class="text-2xl font-bold text-white">Tüm Bildirimler</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="markAllAsRead()" class="bg-accent/20 hover:bg-accent/30 text-accent px-4 py-2 rounded-lg transition-all duration-300 font-medium">
+                            <i data-lucide="check-check" class="w-4 h-4 inline mr-2"></i>
+                            Tümünü Okundu İşaretle
+                        </button>
+                        <button onclick="clearAllNotifications()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-all duration-300 font-medium">
+                            <i data-lucide="trash-2" class="w-4 h-4 inline mr-2"></i>
+                            Tümünü Temizle
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="divide-y divide-white/10">
+                @if (Model.Any())
+                {
+                    @foreach (var notification in Model)
+                    {
+                        <div class="notification-item p-6 hover:bg-white/5 transition-all duration-300 @(notification.IsRead ? "" : "bg-accent/5 border-l-4 border-accent")" data-id="@notification.Id">
+                            <div class="flex items-start space-x-4">
+                                <!-- Notification Icon -->
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-accent/20 to-accent/10 rounded-lg flex items-center justify-center">                                        @switch (notification.Type)
+                                        {
+                                            case NotificationType.Like:
+                                                <i data-lucide="heart" class="w-5 h-5 text-accent"></i>
+                                                break;
+                                            case NotificationType.Follow:
+                                                <i data-lucide="user-plus" class="w-5 h-5 text-accent"></i>
+                                                break;
+                                            case NotificationType.Comment:
+                                                <i data-lucide="message-circle" class="w-5 h-5 text-accent"></i>
+                                                break;
+                                            case NotificationType.PlaylistShare:
+                                                <i data-lucide="list-plus" class="w-5 h-5 text-accent"></i>
+                                                break;
+                                            default:
+                                                <i data-lucide="bell" class="w-5 h-5 text-accent"></i>
+                                                break;
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Notification Content -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="text-white font-medium">@notification.Title</p>
+                                            <p class="text-gray-400 text-sm mt-1">@notification.Message</p>
+                                            <div class="flex items-center space-x-4 mt-2">
+                                                <span class="text-gray-500 text-xs">@notification.RelativeCreatedTime</span>
+                                                @if (!notification.IsRead)
+                                                {
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent">
+                                                        <i data-lucide="circle" class="w-2 h-2 mr-1 fill-current"></i>
+                                                        Yeni
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div class="flex items-center space-x-2 ml-4">
+                                            @if (!notification.IsRead)
+                                            {
+                                                <button onclick="markAsRead('@notification.Id')" class="text-gray-400 hover:text-accent transition-colors duration-200 p-1">
+                                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                                </button>
+                                            }
+                                            <button onclick="deleteNotification('@notification.Id')" class="text-gray-400 hover:text-red-400 transition-colors duration-200 p-1">
+                                                <i data-lucide="x" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Link -->
+                                    @if (!string.IsNullOrEmpty(notification.ActionUrl))
+                                    {                                        <a href="@notification.ActionUrl" class="inline-flex items-center space-x-2 text-accent hover:text-accent-dark transition-colors duration-200 text-sm font-medium mt-3">
+                                            <span>Görüntüle</span>
+                                            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <!-- Empty State -->
+                    <div class="p-12 text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-accent/20 to-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="bell-off" class="w-8 h-8 text-accent"></i>
+                        </div>                        <h3 class="text-xl font-semibold text-white mb-2">Henüz bildirim yok</h3>
+                        <p class="text-gray-400 max-w-sm mx-auto">
+                            Beğeniler, takipler, yorumlar veya diğer etkileşimler aldığınızda burada görünecekler.
+                        </p>
+                        <a href="/" class="inline-flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-black px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 mt-6">
+                            <i data-lucide="home" class="w-4 h-4"></i>
+                            <span>Ana Sayfaya Git</span>
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (ViewBag.CurrentPage > 1 || ViewBag.HasNextPage)
+            {
+                <div class="border-t border-white/10 p-6">
+                    <div class="flex items-center justify-between">
+                        @if (ViewBag.CurrentPage > 1)
+                        {                            <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all duration-300 font-medium">
+                                <i data-lucide="chevron-left" class="w-4 h-4 inline mr-2"></i>
+                                Önceki
+                            </a>
+                        }
+                        else
+                        {
+                            <div></div>
+                        }
+
+                        <span class="text-gray-400 text-sm">Sayfa @ViewBag.CurrentPage</span>
+
+                        @if (ViewBag.HasNextPage)
+                        {                            <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all duration-300 font-medium">
+                                Sonraki
+                                <i data-lucide="chevron-right" class="w-4 h-4 inline ml-2"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <div></div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .notification-item {
+        cursor: pointer;
+    }
+    
+    .notification-item:hover {
+        transform: translateX(4px);
+    }
+</style>
+
+<script src="~/js/notification/notification.js"></script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

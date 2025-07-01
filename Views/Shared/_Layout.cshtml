@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Eryth</title>
+    @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+    <meta name="__RequestVerificationToken" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+    
+    <!-- Tailwind CSS -->
+    <link href="~/css/output.css?v=@(DateTime.Now.Ticks)" rel="stylesheet" />
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Custom CSS -->
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/audioPlayer.css?v=@(DateTime.Now.Ticks)" rel="stylesheet" />
+</head>
+<body class="bg-black text-white font-sans min-h-screen">
+
+    <!-- Page Transition Overlay -->    
+    <div id="page-transition" class="fixed inset-0 bg-black z-[100] opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out">
+        <div class="flex items-center justify-center h-full">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+        </div>
+    </div>
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-black border-b border-muted h-16">
+        <div class="max-w-7xl mx-auto flex items-center justify-between h-full px-6">
+            <!-- Left: Logo -->
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold text-white">Eryth</h1>
+            </div>
+
+            <!-- Center: Navigation Links + Search Bar -->
+            <div class="flex items-center space-x-8">
+                <!-- Navigation Links -->
+                <div class="flex items-center space-x-6">                    
+                    <a href="/" class="text-white hover:text-accent transition-colors duration-200 border-b-2 border-transparent hover:border-accent pb-1" id="nav-home">Ana Sayfa</a>
+                    <a href="/explore" class="text-white hover:text-accent transition-colors duration-200 border-b-2 border-transparent hover:border-accent pb-1" id="nav-feed">Keşfet</a>
+                    <a href="/library" class="text-white hover:text-accent transition-colors duration-200 border-b-2 border-transparent hover:border-accent pb-1" id="nav-library">Kütüphane</a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="w-80">
+                    <form class="flex w-full" method="get" action="/Search">
+                        <div class="relative w-full">                        
+                            <input type="text" name="q" placeholder="Şarkı, sanatçı, albüm ara..." 
+                                   class="w-full bg-muted text-white placeholder-gray-400 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-accent"
+                                   aria-label="Sitede ara"
+                                   id="navbar-search-input"
+                                   autocomplete="off"
+                                   value="@(Context.Request.Query["q"].FirstOrDefault() ?? "")">
+                            <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-accent transition-colors">
+                                <i data-lucide="search" class="w-4 h-4"></i>
+                            </button>
+                            <!-- Search suggestions dropdown -->
+                            <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-1 bg-muted rounded-lg shadow-2xl border border-muted/50 py-2 z-50 max-h-64 overflow-y-auto">
+                            <!-- Öneriler JavaScript tarafından burada gösterilecek -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>            
+            
+            <!-- Right: User Actions -->
+            <div class="flex items-center space-x-4" id="user-actions">
+                <!-- Logged In State -->
+                <div id="logged-in-actions" class="@(User.Identity?.IsAuthenticated == true ? "" : "hidden")">
+                    <div class="flex items-center space-x-6">                        
+                        <!-- Upload Link -->
+                        <a href="/Track/Upload" class="flex items-center space-x-2 text-white hover:text-accent transition-colors duration-200 font-medium px-3 py-2 rounded-lg hover:bg-muted">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            <span>Yükle</span>
+                        </a>                        
+                        <!-- Profile Photo & Dropdown -->
+                        <div class="flex items-center space-x-3">
+                            <!-- Profile Photo (Display Only) -->
+                            @await Component.InvokeAsync("UserProfileImage")
+                            
+                            <!-- Dropdown Button -->
+                            <div class="relative" id="profile-dropdown">
+                                <button class="text-white hover:text-accent transition-colors duration-200 p-2 rounded-lg hover:bg-muted" onclick="toggleDropdown('profile-menu')">
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </button>                           
+                                <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-muted rounded-xl shadow-2xl border border-muted py-2 backdrop-blur-sm">                                
+                                    <a href="@Url.Action("Profile", "User", new { username = User.Identity?.Name })" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="user" class="w-4 h-4 inline mr-2"></i>Profil
+                                </a>
+                                <a href="@Url.Action("LikedTracks", "User")" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="heart" class="w-4 h-4 inline mr-2"></i>Beğendiklerim
+                                </a>
+                                <a href="@Url.Action("Comments", "User")" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="message-circle" class="w-4 h-4 inline mr-2"></i>Yorumlarım
+                                </a>
+                                <a href="@Url.Action("MyPlaylists", "Playlist")" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="list-music" class="w-4 h-4 inline mr-2"></i>Çalma Listelerim
+                                </a>
+                                <a href="@Url.Action("Following", "User", new { username = User.Identity?.Name })" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="users" class="w-4 h-4 inline mr-2"></i>Takip Ettiklerim
+                                </a>
+                                <a href="@Url.Action("Index", "Album")" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="disc-3" class="w-4 h-4 inline mr-2"></i>Albümlerim
+                                </a>
+                                <a href="@Url.Action("MyTracks", "Track")" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="disc" class="w-4 h-4 inline mr-2"></i>Şarkılarım
+                                </a>
+                            </div>
+                            </div>
+                        </div>
+
+                        <!-- Notifications Dropdown -->
+                        <div class="relative" id="notifications-dropdown">
+                            <button class="hover:text-accent transition-colors duration-200 p-2 rounded-lg hover:bg-muted" onclick="toggleDropdown('notifications-menu')">
+                                <i data-lucide="bell" class="w-5 h-5"></i>
+                            </button>                            
+                            <div id="notifications-menu" class="hidden absolute right-0 mt-2 w-80 bg-muted rounded-xl shadow-2xl border border-muted py-2 backdrop-blur-sm">
+                                <div class="px-4 py-3 border-b border-muted">
+                                    <h3 class="text-white font-semibold">Bildirimler</h3>
+                                </div>
+                                <div class="max-h-64 overflow-y-auto">
+                                    <div class="px-4 py-8 text-gray-400 text-sm text-center">
+                                        <i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                                        Yeni bildirim yok
+                                    </div>
+                                </div>                                
+                                <div class="border-t border-accent/50 px-4 py-2">
+                                    <a href="@Url.Action("Index", "Notification")" class="text-accent text-sm hover:underline font-medium">Tüm bildirimleri görüntüle</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages Dropdown -->
+                        <div class="relative" id="messages-dropdown">                            
+                            <button class="hover:text-accent transition-colors duration-200 p-2 rounded-lg hover:bg-muted" onclick="toggleDropdown('messages-menu')">
+                                <i data-lucide="mail" class="w-5 h-5"></i>
+                            </button>
+                            <div id="messages-menu" class="hidden absolute right-0 mt-2 w-80 bg-muted rounded-xl shadow-2xl border border-accent/50 py-2 backdrop-blur-sm">
+                                <div class="px-4 py-3 border-b border-accent/50">
+                                    <h3 class="text-white font-semibold">Mesajlar</h3>
+                                </div>
+                                <div class="max-h-64 overflow-y-auto">
+                                    <div class="px-4 py-8 text-gray-400 text-sm text-center">
+                                        <i data-lucide="mail-open" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                                        Yeni mesaj yok
+                                    </div>
+                                </div>                                
+                                <div class="border-t border-accent/50 px-4 py-2">
+                                    <a href="@Url.Action("Index", "Message")" class="text-accent text-sm hover:underline font-medium">Tüm mesajları görüntüle</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- More Options Dropdown -->
+                        <div class="relative" id="more-dropdown">                            
+                            <button class="hover:text-accent transition-colors duration-200 p-2 rounded-lg hover:bg-muted" onclick="toggleDropdown('more-menu')">
+                                <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                            </button>
+                            <div id="more-menu" class="hidden absolute right-0 mt-2 w-48 bg-muted rounded-xl shadow-2xl border border-muted py-2 backdrop-blur-sm">                                
+                                <a href="@Url.Action("About", "Home")" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="info" class="w-4 h-4 inline mr-2"></i>Hakkında
+                                </a><a href="@Url.Action("AccountSettings", "User")" class="block px-4 py-2 text-white hover:bg-muted hover:text-accent transition-all duration-200 font-medium">
+                                    <i data-lucide="settings" class="w-4 h-4 inline mr-2"></i>Ayarlar
+                                </a>
+                                <hr class="border-muted my-1">
+                                <form action="/Auth/Logout" method="post" class="inline-block w-full">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-white hover:bg-muted hover:text-red-400 transition-all duration-200 font-medium">
+                                        <i data-lucide="log-out" class="w-4 h-4 inline mr-2"></i>Çıkış Yap
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logged Out State -->                
+                <div id="logged-out-actions" class="@(User.Identity?.IsAuthenticated == true ? "hidden" : "flex items-center space-x-3")">
+                    <button onclick="showAuthModal('signin')" class="text-white hover:text-accent transition-all duration-200 px-4 py-2 rounded-lg hover:bg-muted font-medium">Giriş Yap</button>
+                    <a href="/Auth/Register" class="bg-accent hover:bg-accent-dark text-white px-6 py-2 rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 inline-block text-center">Hesap Oluştur</a>
+                </div>
+            </div>
+        </div>
+    </nav>    
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden">
+        <!-- Background Overlay with blur -->
+        <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" onclick="hideAuthModal()"></div>
+        
+        <!-- Modal Container - Centered -->
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div id="auth-content" class="bg-gradient-to-br from-muted to-muted rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all duration-300 ease-out scale-95 opacity-0 border border-muted">
+                
+                <!-- Sign In Form -->
+                <div id="signin-form" class="hidden">
+                    <div class="flex justify-between items-center mb-8">
+                        <div>
+                            <h2 class="text-white text-3xl font-bold">Tekrar Hoş Geldiniz</h2>
+                            <p class="text-gray-400 text-sm mt-1">Eryth'e devam etmek için giriş yapın</p>
+                        </div>
+                        <button onclick="hideAuthModal()" class="text-gray-400 hover:text-white transition-all duration-200 p-2 rounded-lg hover:bg-black">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Display validation errors -->
+                    <div id="signin-errors" class="hidden mb-6 p-4 bg-red-900/30 border border-red-700/50 rounded-xl backdrop-blur-sm">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+                            <div class="text-red-300 text-sm font-medium" id="signin-error-message"></div>
+                        </div>
+                    </div>
+                    
+                    <form action="/Auth/Login" method="post" class="space-y-6" id="signin-form-element">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="space-y-2">
+                            <label for="signin-email" class="block text-gray-300 text-sm font-medium">E-posta veya Kullanıcı Adı</label>
+                            <div class="relative">                                
+                                <input type="text" id="signin-email" name="EmailOrUsername" 
+                                       class="w-full bg-black text-white rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-black transition-all duration-200 border border-muted hover:border-muted" 
+                                       placeholder="E-posta veya kullanıcı adınızı girin" required>
+                                <i data-lucide="user" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="signin-password" class="block text-gray-300 text-sm font-medium">Şifre</label>
+                            <div class="relative">                                
+                                <input type="password" id="signin-password" name="Password" autocomplete="current-password"
+                                       class="w-full bg-black text-white rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-black transition-all duration-200 border border-muted hover:border-muted" 
+                                       placeholder="Şifrenizi girin" required>
+                                <i data-lucide="lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">                                
+                                <input type="checkbox" id="remember-me" name="RememberMe" 
+                                       class="w-4 h-4 text-accent bg-muted border-muted rounded focus:ring-accent focus:ring-2">
+                                <label for="remember-me" class="ml-2 text-gray-300 text-sm">Beni hatırla</label>
+                            </div>
+                            <a href="#" onclick="showForgotPassword()" class="text-accent hover:text-accent-dark text-sm transition-colors duration-200 font-medium">
+                                Şifremi unuttum?
+                            </a>
+                        </div>
+                          <button type="submit" class="w-full bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white py-3 rounded-xl font-semibold mt-6 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center space-x-2">
+                            <i data-lucide="log-in" class="w-5 h-5"></i>
+                            <span>Giriş Yap</span>
+                        </button>                        
+                        <div class="text-center pt-6 border-t border-muted">
+                            <p class="text-gray-400 text-sm mb-3">Hesabınız yok mu?</p>
+                            <button type="button" onclick="switchAuthMode('signup')" class="text-accent hover:text-accent-dark font-semibold transition-colors duration-200 underline decoration-transparent hover:decoration-current">
+                                Hesap Oluştur
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Sign Up Form -->
+                <div id="signup-form" class="hidden">
+                    <div class="flex justify-between items-center mb-8">
+                        <div>
+                            <h2 class="text-white text-3xl font-bold">Eryth'e Katıl</h2>
+                            <p class="text-gray-400 text-sm mt-1">Müzik yolculuğunuzu başlatmak için hesap oluşturun</p>
+                        </div>
+                        <button onclick="hideAuthModal()" class="text-gray-400 hover:text-white transition-all duration-200 p-2 rounded-lg hover:bg-gray-700/50">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Display validation errors -->
+                    <div id="signup-errors" class="hidden mb-6 p-4 bg-red-900/30 border border-red-700/50 rounded-xl backdrop-blur-sm">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+                            <div class="text-red-300 text-sm font-medium" id="signup-error-message"></div>
+                        </div>
+                    </div>
+                    
+                    <form action="/Auth/Register" method="post" class="space-y-5" id="signup-form-element">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="space-y-2">
+                            <label for="signup-username" class="block text-gray-300 text-sm font-medium">Kullanıcı Adı</label>
+                            <div class="relative">                                
+                                <input type="text" id="signup-username" name="Username" 
+                                       class="w-full bg-black text-white rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-black transition-all duration-200 border border-muted hover:border-muted" 
+                                       placeholder="Bir kullanıcı adı seçin" required minlength="3" maxlength="50" pattern="^[a-zA-Z0-9_-]+$">
+                                <i data-lucide="at-sign" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                            </div>
+                            <div class="text-xs text-gray-400">3-50 karakter, sadece harf, rakam, alt çizgi ve tire</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="signup-email" class="block text-gray-300 text-sm font-medium">E-posta Adresi</label>
+                            <div class="relative">                                
+                                <input type="email" id="signup-email" name="Email" 
+                                       class="w-full bg-black text-white rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-black transition-all duration-200 border border-muted hover:border-muted" 
+                                       placeholder="E-posta adresinizi girin" required maxlength="254">
+                                <i data-lucide="mail" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="signup-displayname" class="block text-gray-300 text-sm font-medium">Görünür Ad <span class="text-gray-500">(İsteğe bağlı)</span></label>
+                            <div class="relative">                                
+                                <input type="text" id="signup-displayname" name="DisplayName" 
+                                       class="w-full bg-black text-white rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-black transition-all duration-200 border border-muted hover:border-muted" 
+                                       placeholder="Görünür adınız" maxlength="100">
+                                <i data-lucide="user-check" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="signup-password" class="block text-gray-300 text-sm font-medium">Şifre</label>
+                            <div class="relative">
+                                <input type="password" id="signup-password" name="Password" autocomplete="new-password"
+                                       class="w-full bg-secondary/80 text-white rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-secondary transition-all duration-200 border border-gray-600/50 hover:border-gray-500/50" 
+                                       placeholder="Şifre oluşturun" required minlength="8" maxlength="100">
+                                <i data-lucide="lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                            </div>
+                            <div class="text-xs text-gray-400">Büyük harf, küçük harf, rakam ve özel karakter içermelidir</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="signup-confirm-password" class="block text-gray-300 text-sm font-medium">Şifre Tekrarı</label>
+                            <div class="relative">                                
+                                <input type="password" id="signup-confirm-password" name="ConfirmPassword" autocomplete="new-password"
+                                       class="w-full bg-secondary/80 text-white rounded-xl py-3 px-4 pl-11 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-secondary transition-all duration-200 border border-secondary-light/50 hover:border-secondary-light/50" 
+                                       placeholder="Şifrenizi tekrarlayın" required>
+                                <i data-lucide="lock-keyhole" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-start">                                
+                                <input type="checkbox" id="agree-terms" name="AgreeToTerms" 
+                                       class="w-4 h-4 text-accent bg-secondary border-secondary-light rounded focus:ring-accent focus:ring-2 mt-1" required>
+                                <label for="agree-terms" class="ml-3 text-gray-300 text-sm">
+                                    <a href="/terms" class="text-accent hover:underline font-medium">Kullanım Şartları</a> ve <a href="/privacy" class="text-accent hover:underline font-medium">Gizlilik Politikası</a>'nı kabul ediyorum
+                                </label>
+                            </div>
+                            <div class="flex items-center">                                
+                                <input type="checkbox" id="subscribe-newsletter" name="SubscribeToNewsletter" 
+                                       class="w-4 h-4 text-accent bg-secondary border-secondary-light rounded focus:ring-accent focus:ring-2">
+                                <label for="subscribe-newsletter" class="ml-3 text-gray-300 text-sm">Bültene abone ol <span class="text-gray-500">(isteğe bağlı)</span></label>
+                            </div>
+                        </div>
+                          <button type="submit" class="w-full bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-secondary text-white py-3 rounded-xl font-semibold mt-6 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center space-x-2">
+                            <i data-lucide="user-plus" class="w-5 h-5"></i>
+                            <span>Hesap Oluştur</span>
+                        </button>
+                          <div class="text-center pt-6 border-t border-secondary/50">
+                            <p class="text-gray-400 text-sm mb-3">Zaten hesabınız var mı?</p>
+                            <button type="button" onclick="switchAuthMode('signin')" class="text-accent hover:text-accent-dark font-semibold transition-colors duration-200 underline decoration-transparent hover:decoration-current">
+                                Giriş Yap
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="pt-16 pb-24">
+        @RenderBody()
+    </main>
+
+    <!-- Audio Player -->
+    <div id="audio-player" class="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 h-24 transform translate-y-full transition-transform duration-300 ease-out z-40 hidden">
+        <div class="flex items-center justify-between h-full px-6">            
+            <!-- Left Controls -->
+            <div class="flex items-center space-x-4">                
+                <button class="text-white hover:text-accent transition-colors duration-200" onclick="playPreviousTrack()" title="Önceki şarkı">
+                    <i data-lucide="skip-back" class="w-5 h-5"></i>
+                </button>
+                <button class="bg-accent hover:bg-accent-dark text-white rounded-full p-2 transition-colors duration-200" onclick="togglePlayPause()">
+                    <i data-lucide="play" class="w-6 h-6" id="play-pause-icon"></i>
+                </button>
+                <button class="text-white hover:text-accent transition-colors duration-200" onclick="playNextTrack()" title="Sonraki şarkı">
+                    <i data-lucide="skip-forward" class="w-5 h-5"></i>
+                </button>
+                <button class="text-white hover:text-accent transition-colors duration-200" onclick="toggleShuffle()" title="Karıştır">
+                    <i data-lucide="shuffle" class="w-4 h-4" id="shuffle-icon"></i>
+                </button>
+                <button class="text-white hover:text-accent transition-colors duration-200" onclick="toggleRepeat()" title="Tekrarla">
+                    <i data-lucide="repeat" class="w-4 h-4" id="repeat-icon"></i>
+                </button>
+                <!-- Close Button -->
+                <button class="text-gray-400 hover:text-red-400 transition-colors duration-200 ml-2" onclick="hideAudioPlayer()" title="Oynatıcıyı kapat">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Center Progress -->
+            <div class="flex-1 mx-8">                
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs text-gray-400" id="current-time">0:00</span>                    
+                    <div class="flex-1 bg-gray-600 h-1 rounded-full relative cursor-pointer" id="progress-bar" onclick="seekAudio(event)">
+                        <div class="bg-accent h-1 rounded-full transition-all duration-100" style="width: 0%" id="progress-fill"></div>
+                        <div class="absolute top-1/2 transform -translate-y-1/2 bg-accent w-3 h-3 rounded-full opacity-0 transition-opacity duration-200" style="left: 0%" id="progress-thumb"></div>
+                    </div>
+                    <span class="text-xs text-gray-400" id="duration">0:00</span>
+                </div>
+            </div>
+
+            <!-- Right Info & Controls -->
+            <div class="flex items-center space-x-4">                
+                <!-- Volume Control -->
+                <div class="flex items-center space-x-2">                    
+                    <button class="text-white hover:text-accent transition-colors duration-200" id="volume-button" title="Ses senkronizasyonunu sıfırla">
+                        <i data-lucide="volume-2" class="w-4 h-4"></i>
+                    </button>
+                    <input type="range" min="0" max="100" value="75" id="volume-slider"
+                           class="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider" 
+                           title="Ses seviyesini ayarla">
+                </div>
+
+                <!-- Track Info -->
+                <div class="flex items-center space-x-3">
+                    <img src="https://via.placeholder.com/48" alt="Şarkı" class="w-12 h-12 rounded-full" id="track-thumbnail">
+                    <div class="text-left">
+                        <div class="text-white text-sm font-medium" id="track-title">Şarkı Başlığı</div>
+                        <div class="text-gray-400 text-xs" id="track-artist">Sanatçı Adı</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-3">                    
+                    <button class="text-white hover:text-accent transition-colors duration-200">
+                        <i data-lucide="heart" class="w-5 h-5"></i>
+                    </button>
+                    <button class="text-white hover:text-accent transition-colors duration-200">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    </button>
+                    <button class="text-white hover:text-accent transition-colors duration-200">
+                        <i data-lucide="list-plus" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>    
+    
+    <!-- Scripts -->
+    <script src="~/js/audioPlayer.js?v=@(DateTime.Now.Ticks)"></script>
+    <script src="~/js/layout.js?v=@(DateTime.Now.Ticks)"></script>
+    <script src="~/js/like-toggle.js?v=@(DateTime.Now.Ticks)"></script>
+    <script src="~/js/follow-toggle.js?v=@(DateTime.Now.Ticks)"></script>
+    <script src="~/js/search-suggest.js?v=@(DateTime.Now.Ticks)"></script>
+
+    <!-- Custom JS -->
+    <script src="~/js/site.js?v=@(DateTime.Now.Ticks)"></script>
+
+    <!-- Page-specific scripts -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

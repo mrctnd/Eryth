@@ -1,0 +1,207 @@
+@model Eryth.ViewModels.CreatePlaylistViewModel
+@using Eryth.Models.Enums
+@{
+    ViewData["Title"] = "Çalma Listesi Oluştur";
+}
+
+<style>
+    /* Custom radio styles */
+    input[type="radio"]:checked {
+        background-color: #00ff87;
+        border-color: #00ff87;
+        background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+    }
+    
+    /* Custom checkbox styles */
+    input[type="checkbox"]:checked {
+        background-color: #00ff87;
+        border-color: #00ff87;
+        background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
+    }
+</style>
+
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #00ff87 1px, transparent 0); background-size: 30px 30px;"></div>
+    </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-20 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="max-w-4xl mx-auto px-6 py-16 relative z-10">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-6xl font-black tracking-tight leading-none mb-6">
+                    Yeni <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Çalma Listesi</span> Oluştur
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                    Favori şarkılarınızı düzenleyin ve müzik zevkinizi paylaşın
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Form Section -->
+    <div class="max-w-4xl mx-auto px-6 pb-12 -mt-8 relative z-10">
+        <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
+            <form asp-action="Create" method="post" enctype="multipart/form-data" class="space-y-8">
+                <div asp-validation-summary="ModelOnly" class="text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-4"></div>
+                    
+                <!-- Playlist Cover Section -->
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold text-white flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-accent to-accent-dark rounded-lg flex items-center justify-center">
+                            <i data-lucide="image" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <span>Çalma Listesi Kapağı</span>
+                    </h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Cover Image Preview -->
+                        <div class="space-y-4">
+                            <div id="cover-preview" class="aspect-square bg-gradient-to-br from-accent/20 to-black rounded-2xl border border-white/10 flex items-center justify-center relative overflow-hidden">
+                                <div id="cover-placeholder" class="text-center">
+                                    <i data-lucide="list-music" class="w-16 h-16 text-accent mx-auto mb-4"></i>
+                                    <p class="text-gray-400">Çalma listesi kapağı önizlemesi</p>
+                                </div>
+                            
+                                <img id="cover-image" class="w-full h-full object-cover hidden" alt="Playlist cover">
+                                <button type="button" id="remove-cover" class="absolute top-4 right-4 w-8 h-8 bg-red-500/20 hover:bg-red-500/40 rounded-full items-center justify-center transition-colors duration-300 hidden">
+                                    <i data-lucide="x" class="w-4 h-4 text-red-400"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload Options -->
+                        <div class="space-y-6">
+                            <!-- File Upload -->  
+                            <div>
+                                <label for="cover-upload" class="block text-sm font-medium text-gray-300 mb-3">Kapak Görseli Yükle</label>
+                                <div class="relative">
+                                    <input type="file" id="cover-upload" asp-for="CoverImage" accept="image/*" class="hidden">
+                                    <label for="cover-upload" class="w-full bg-gradient-to-r from-accent/20 to-accent/10 hover:from-accent/30 hover:to-accent/20 border border-accent/30 rounded-lg px-6 py-4 text-center cursor-pointer transition-all duration-300 block">
+                                        <i data-lucide="upload-cloud" class="w-6 h-6 text-accent mx-auto mb-2"></i>
+                                        <span class="text-white font-medium">Görsel Dosyası Seçin</span>
+                                        <p class="text-gray-400 text-sm mt-1">PNG, JPG, WEBP - maksimum 5MB</p>
+                                    </label>
+                                </div>
+                                <span asp-validation-for="CoverImage" class="text-red-400 text-sm"></span>
+                            </div>
+                            
+                            <!-- URL Option -->
+                            <div class="relative">
+                                <div class="absolute inset-0 flex items-center">
+                                   
+                                    <div class="w-full border-t border-white/10"></div>
+                                </div>
+                                       
+                                <div class="relative flex justify-center text-sm">
+                                    <span class="px-4 bg-black text-gray-400">Veya</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label asp-for="CoverImageUrl" class="block text-sm font-medium text-gray-300 mb-3">Kapak Görseli URL'si (isteğe bağlı)</label>
+                                <input asp-for="CoverImageUrl" class="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" placeholder="https://example.com/kapak.jpg">
+                                <span asp-validation-for="CoverImageUrl" class="text-red-400 text-sm"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Playlist Information -->
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold text-white flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-accent to-accent-dark rounded-lg flex items-center justify-center">
+                            <i data-lucide="info" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <span>Çalma Listesi Bilgileri</span>    
+                    </h3>
+                                   
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Name -->
+                        <div>
+                            <label asp-for="Name" class="block text-sm font-medium text-gray-300 mb-3">Çalma Listesi Adı</label>
+                            <input asp-for="Name" class="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300" placeholder="Çalma listesi adını girin" required>
+                            <span asp-validation-for="Name" class="text-red-400 text-sm"></span>
+                        </div>
+                        
+                        <!--Privacy -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-3">Gizlilik</label>
+                            <div class="space-y-3">
+                                <label class="flex items-center space-x-3 cursor-pointer p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                                <input asp-for="Privacy" type="radio" value="@PlaylistPrivacy.Public" class="w-4 h-4 text-accent bg-black/50 border-2 border-white/20 focus:ring-2 focus:ring-accent" checked>
+                                    <div class="flex items-center space-x-2">
+                                        <i data-lucide="globe" class="w-4 h-4 text-accent"></i>
+                                        <span class="text-white font-medium">Herkese Açık</span>
+                                    </div>
+                                </label>
+                               
+                                <label class="flex items-center space-x-3 cursor-pointer p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                                    <input asp-for="Privacy" type="radio" value="@PlaylistPrivacy.Private" class="w-4 h-4 text-accent bg-black/50 border-2 border-white/20 focus:ring-2 focus:ring-accent">
+                                    <div class="flex items-center space-x-2">
+                                        <i data-lucide="lock" class="w-4 h-4 text-accent"></i>
+                                        <span class="text-white font-medium">Özel</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>         
+                    </div>
+                    
+                    <!-- Description -->
+                    <div>
+                        <label asp-for="Description" class="block text-sm font-medium text-gray-300 mb-3">Açıklama</label>
+                        <textarea asp-for="Description" rows="4" class="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300 resize-none" placeholder="Çalma listenizi tanımlayın (isteğe bağlı)"></textarea>
+                        <span asp-validation-for="Description" class="text-red-400 text-sm"></span> 
+                    </div>
+                </div>
+
+                <!-- Collaboration Setting -->
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold text-white flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-accent to-accent-dark rounded-lg flex items-center justify-center">
+                            <i data-lucide="users" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <span>İşbirliği</span>
+                    </h3>
+                         
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+                        <label class="flex items-start space-x-4 cursor-pointer">
+                            <input asp-for="IsCollaborative" type="checkbox" class="w-5 h-5 rounded bg-black/50 border-2 border-white/20 text-accent focus:ring-2 focus:ring-accent mt-1">
+                            <div>
+                                <div class="text-white font-medium mb-1">Başkalarının şarkı eklemesine izin ver</div>
+                                <p class="text-gray-400 text-sm">İşbirliğini etkinleştirin böylece başkaları bu çalma listesine katkıda bulunabilir</p>
+                            </div>
+                        </label>
+                    </div>   
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-4 pt-6">
+                    <a href="@Url.Action("MyPlaylists", "Playlist")" class="flex-1 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold text-center transition-all duration-300 hover:scale-105">
+                        İptal
+                    </a>
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-black px-6 py-4 rounded-lg font-semibold transition-all duration-300 hover:scale-105">
+                        Çalma Listesi Oluştur
+                    </button>
+                </div>        
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/playlist/playlistCreate.js"></script>
+
+@section Scripts {
+                       
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+                       
+        
+    

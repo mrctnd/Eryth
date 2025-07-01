@@ -1,0 +1,35 @@
+@model Eryth.ViewModels.FollowButtonViewModel
+
+@{
+    var buttonClasses = Model.IsFollowed ? 
+        "js-follow-toggle is-followed bg-white/10 text-white hover:bg-red-500/20 hover:text-red-400 border border-white/20 hover:border-red-400/50" : 
+        "js-follow-toggle bg-gradient-to-r from-accent to-accent-dark text-white hover:from-accent-dark hover:to-accent";
+    
+    var iconClass = Model.IsFollowed ? "user-check" : "user-plus";
+    var buttonText = Model.IsFollowed ? "Following" : "Follow";
+    
+    if (Model.EntityType == "artist")
+    {
+        iconClass = Model.IsFollowed ? "user-check" : "user-plus";
+    }
+    else if (Model.EntityType == "playlist")
+    {
+        iconClass = Model.IsFollowed ? "heart" : "heart";
+        buttonText = Model.IsFollowed ? "Following" : "Follow";
+    }
+}
+
+<button class="@buttonClasses @Model.CssClasses px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1 flex items-center gap-2"
+        data-entity-id="@Model.EntityId"
+        data-entity-type="@Model.EntityType"
+        @if (Model.ShowCount && Model.FollowerCount.HasValue)
+        {
+            <text>data-follower-count="@Model.FollowerCount.Value"</text>
+        }>
+    <i data-lucide="@iconClass" class="js-follow-icon w-5 h-5"></i>
+    <span class="js-follow-text">@buttonText</span>
+    @if (Model.ShowCount && Model.FollowerCount.HasValue)
+    {
+        <span class="js-follow-count ml-2 text-xs opacity-75">(@Model.FollowerCount)</span>
+    }
+</button>

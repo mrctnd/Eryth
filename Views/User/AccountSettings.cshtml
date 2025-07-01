@@ -1,0 +1,581 @@
+@model Eryth.ViewModels.UserAccountSettingsViewModel
+@{
+    ViewData["Title"] = "Hesap Ayarları";
+    Layout = "_Layout";
+}
+
+<div class="min-h-screen bg-black text-white">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #1DB954 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-10 right-20 w-32 h-32 bg-accent/10 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute bottom-20 left-10 w-48 h-48 bg-accent/5 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        
+        <div class="container mx-auto px-6 py-16 relative z-10">
+            <!-- Header -->
+            <div class="text-center max-w-4xl mx-auto mb-16">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-accent to-accent-dark rounded-2xl mb-6">
+                    <i data-lucide="settings" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-black tracking-tight leading-none mb-6">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white">Hesap Ayarları</span>
+                </h1>
+                <p class="text-xl text-gray-300 leading-relaxed max-w-2xl mx-auto">
+                    Hesap tercihlerinizi, güvenlik ayarlarınızı ve kişisel bilgilerinizi yöneterek Eryth deneyiminizi özelleştirin.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 pb-16 relative z-10">
+        <!-- Success/Error Messages -->
+        @if (TempData["Success"] != null || ViewBag.SuccessMessage != null)
+        {
+            <div class="mb-8 rounded-2xl bg-gradient-to-r from-green-500/10 to-accent/10 border border-green-500/20 p-6 backdrop-blur-sm">
+                <div class="flex items-center text-green-300">
+                    <i data-lucide="check-circle" class="w-5 h-5 mr-3"></i>
+                    <span class="font-medium">@(TempData["Success"] ?? ViewBag.SuccessMessage)</span>
+                </div>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="mb-8 rounded-2xl bg-gradient-to-r from-red-500/10 to-red-600/10 border border-red-500/20 p-6 backdrop-blur-sm">
+                <div class="flex items-center text-red-300">
+                    <i data-lucide="alert-circle" class="w-5 h-5 mr-3"></i>
+                    <span class="font-medium">@TempData["Error"]</span>
+                </div>
+            </div>
+        }
+
+        <!-- Validation Summary -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="mb-8 rounded-2xl bg-gradient-to-r from-red-500/10 to-red-600/10 border border-red-500/20 p-6 backdrop-blur-sm">
+                <div class="text-red-300">
+                    <div class="flex items-center mb-4">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 mr-3"></i>
+                        <h4 class="font-semibold">Lütfen aşağıdaki hataları düzeltin:</h4>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 ml-8">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+
+        <form asp-action="AccountSettings" method="post" enctype="multipart/form-data" class="space-y-8 max-w-6xl mx-auto">
+            @Html.AntiForgeryToken()
+
+            <!-- Basic Information Section -->
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+                <div class="p-8">
+                    <div class="flex items-center mb-8">
+                        <div class="w-10 h-10 bg-gradient-to-r from-accent to-accent-dark rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="user" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Temel Bilgiler</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Username -->
+                        <div class="space-y-2">
+                            <label asp-for="Username" class="block text-sm font-semibold text-gray-300">Kullanıcı Adı</label>
+                            <input asp-for="Username" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200" readonly>
+                            <span asp-validation-for="Username" class="text-red-400 text-sm"></span>
+                            <p class="text-gray-500 text-sm">Kullanıcı adı değiştirilemez</p>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="space-y-2">
+                            <label asp-for="Email" class="block text-sm font-semibold text-gray-300">E-posta Adresi</label>
+                            <input asp-for="Email" type="email" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200">
+                            <span asp-validation-for="Email" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <!-- Display Name -->
+                        <div class="space-y-2">
+                            <label asp-for="DisplayName" class="block text-sm font-semibold text-gray-300">Görünen Ad</label>
+                            <input asp-for="DisplayName" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200">
+                            <span asp-validation-for="DisplayName" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <!-- Website -->
+                        <div class="space-y-2">
+                            <label asp-for="Website" class="block text-sm font-semibold text-gray-300">Web Sitesi</label>
+                            <input asp-for="Website" type="url" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200" placeholder="https://example.com">
+                            <span asp-validation-for="Website" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="space-y-2">
+                            <label asp-for="Location" class="block text-sm font-semibold text-gray-300">Konum</label>
+                            <input asp-for="Location" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200" placeholder="Şehir, Ülke">
+                            <span asp-validation-for="Location" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <!-- Birth Year -->
+                        <div class="space-y-2">
+                            <label asp-for="BirthYear" class="block text-sm font-semibold text-gray-300">Doğum Yılı</label>
+                            <input asp-for="BirthYear" type="number" min="1900" max="2100" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200" placeholder="1990">
+                            <span asp-validation-for="BirthYear" class="text-red-400 text-sm"></span>
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="mt-6 space-y-2">
+                        <label asp-for="Bio" class="block text-sm font-semibold text-gray-300">Biyografi</label>
+                        <textarea asp-for="Bio" rows="4" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200 resize-none" placeholder="Kendiniz hakkında bilgi verin..."></textarea>
+                        <span asp-validation-for="Bio" class="text-red-400 text-sm"></span>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="mt-6 space-y-2">
+                        <label asp-for="Gender" class="block text-sm font-semibold text-gray-300">Cinsiyet</label>
+                        <select asp-for="Gender" class="w-full md:w-1/2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200 [&>option]:bg-gray-800 [&>option]:text-white">
+                            <option value="">Belirtmek istemiyorum</option>
+                            <option value="Male">Erkek</option>
+                            <option value="Female">Kadın</option>
+                            <option value="Non-binary">Non-binary</option>
+                            <option value="Other">Diğer</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="text-red-400 text-sm"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Settings Section -->
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+                <div class="p-8">
+                    <div class="flex items-center mb-8">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Gizlilik ve Bildirimler</h2>
+                    </div>
+
+                    <div class="space-y-8">
+                        <!-- Private Account -->
+                        <div class="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/10">
+                            <div>
+                                <h3 class="text-white font-semibold text-lg mb-2">Özel Hesap</h3>
+                                <p class="text-gray-400">Hesabınız özel olduğunda, yalnızca onaylanmış takipçiler müzik etkinliğinizi görebilir</p>
+                            </div>
+                            <div class="flex items-center">
+                                <label class="toggle-switch">
+                                    <input asp-for="IsPrivate" type="checkbox" class="toggle-input">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Email Notifications -->
+                        <div class="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/10">
+                            <div>
+                                <h3 class="text-white font-semibold text-lg mb-2">E-posta Bildirimleri</h3>
+                                <p class="text-gray-400">Yeni takipçiler, beğeniler ve platform güncellemeleri için e-posta bildirimleri alın</p>
+                            </div>
+                            <div class="flex items-center">
+                                <label class="toggle-switch">
+                                    <input asp-for="EmailNotifications" type="checkbox" class="toggle-input">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings Section -->
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+                <div class="p-8">
+                    <div class="flex items-center mb-8">
+                        <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="lock" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Güvenlik Ayarları</h2>
+                    </div>
+
+                    <div class="space-y-8">
+                        <!-- Two-Factor Authentication -->
+                        <div class="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/10">
+                            <div>
+                                <h3 class="text-white font-semibold text-lg mb-2">İki Faktörlü Kimlik Doğrulama</h3>
+                                <p class="text-gray-400">Hesabınıza ekstra bir güvenlik katmanı ekleyin</p>
+                            </div>
+                            <div class="flex items-center">
+                                <label class="toggle-switch">
+                                    <input asp-for="IsTwoFactorEnabled" type="checkbox" class="toggle-input">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Password Change Section -->
+                        <div class="border-t border-white/10 pt-8">
+                            <h3 class="text-white font-semibold text-xl mb-6">Şifre Değiştir</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div class="space-y-2">
+                                    <label asp-for="CurrentPassword" class="block text-sm font-semibold text-gray-300">Mevcut Şifre</label>
+                                    <input asp-for="CurrentPassword" type="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200">
+                                    <span asp-validation-for="CurrentPassword" class="text-red-400 text-sm"></span>
+                                </div>
+                                <div class="space-y-2">
+                                    <label asp-for="NewPassword" class="block text-sm font-semibold text-gray-300">Yeni Şifre</label>
+                                    <input asp-for="NewPassword" type="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200">
+                                    <span asp-validation-for="NewPassword" class="text-red-400 text-sm"></span>
+                                </div>
+                                <div class="space-y-2">
+                                    <label asp-for="ConfirmNewPassword" class="block text-sm font-semibold text-gray-300">Yeni Şifreyi Onayla</label>
+                                    <input asp-for="ConfirmNewPassword" type="password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200">
+                                    <span asp-validation-for="ConfirmNewPassword" class="text-red-400 text-sm"></span>
+                                </div>
+                            </div>
+                            <p class="text-gray-500 text-sm mt-4">Şifrenizi değiştirmek istemiyorsanız boş bırakın</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preferences Section -->
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+                <div class="p-8">
+                    <div class="flex items-center mb-8">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="palette" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Tercihler</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Theme -->
+                        <div class="space-y-2">
+                            <label asp-for="Theme" class="block text-sm font-semibold text-gray-300">Tema</label>
+                            <select asp-for="Theme" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200">
+                                <option value="dark">Koyu (Mevcut)</option>
+                                <option value="light" disabled>Açık (Yakında)</option>
+                                <option value="auto" disabled>Otomatik (Yakında)</option>
+                            </select>
+                            <span asp-validation-for="Theme" class="text-red-400 text-sm"></span>
+                        </div>
+
+                        <!-- Language -->
+                        <div class="space-y-2">
+                            <label asp-for="Language" class="block text-sm font-semibold text-gray-300">Dil</label>
+                            <select asp-for="Language" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all duration-200">
+                                <option value="en">İngilizce (Mevcut)</option>
+                                <option value="tr" disabled>Türkçe (Yakında)</option>
+                                <option value="es" disabled>İspanyolca (Yakında)</option>
+                            </select>
+                            <span asp-validation-for="Language" class="text-red-400 text-sm"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Image Section -->
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+                <div class="p-8">
+                    <div class="flex items-center mb-8">
+                        <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="image" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Profil Resmi</h2>
+                    </div>
+
+                    <div class="flex flex-col lg:flex-row items-start space-y-6 lg:space-y-0 lg:space-x-8">
+                        <!-- Current Profile Image -->
+                        <div class="flex-shrink-0">
+                            @{
+                                var defaultImageSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E";
+                                var currentImageUrl = !string.IsNullOrEmpty(Model.CurrentProfileImageUrl) ? (Model.CurrentProfileImageUrl.StartsWith("/") ? Model.CurrentProfileImageUrl : "/" + Model.CurrentProfileImageUrl) : defaultImageSvg;
+                            }
+                            <div class="profile-preview relative">
+                                <img src="@currentImageUrl" alt="Current Profile Image" class="w-24 h-24 rounded-2xl object-cover border-2 border-white/20">
+                            </div>
+                        </div>
+
+                        <!-- Upload New Image -->
+                        <div class="flex-1 space-y-2">
+                            <label asp-for="ProfileImage" class="block text-sm font-semibold text-gray-300">Yeni Profil Resmi Yükle</label>
+                            <input asp-for="ProfileImage" type="file" accept="image/*" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-accent file:text-white hover:file:bg-accent-dark file:cursor-pointer transition-all duration-200">
+                            <span asp-validation-for="ProfileImage" class="text-red-400 text-sm"></span>
+                            <p class="text-gray-500 text-sm">Desteklenen formatlar: JPG, PNG, WEBP. Maksimum boyut: 2MB</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner Image Section -->
+            <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+                <div class="p-8">
+                    <div class="flex items-center mb-8">
+                        <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="image" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Banner Resmi</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Current Banner Image Preview -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-300">Mevcut Banner</label>
+                            <div class="banner-preview relative h-40 md:h-48 bg-gradient-to-r from-gray-800/50 to-gray-600/50 rounded-2xl overflow-hidden border-2 border-white/10">
+                                @if (!string.IsNullOrEmpty(Model.CurrentBannerImageUrl))
+                                {
+                                    <img src="@(Model.CurrentBannerImageUrl.StartsWith("/") ? Model.CurrentBannerImageUrl : "/" + Model.CurrentBannerImageUrl)" alt="Current Banner" class="w-full h-full object-cover">
+                                        <div class="banner-placeholder hidden absolute inset-0 items-center justify-center">
+                                        <div class="text-center">
+                                            <i data-lucide="image" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
+                                            <p class="text-gray-400">Banner resmi ayarlanmamış</p>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <img src="" alt="Banner Preview" class="w-full h-full object-cover hidden">
+                                    <div class="banner-placeholder absolute inset-0 flex items-center justify-center">
+                                        <div class="text-center">
+                                            <i data-lucide="image" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
+                                            <p class="text-gray-400">Banner resmi ayarlanmamış</p>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            </div>
+                        </div>
+
+                        <!-- Upload New Banner -->
+                        <div class="space-y-2">
+                            <label asp-for="BannerImage" class="block text-sm font-semibold text-gray-300">Yeni Banner Resmi Yükle</label>
+                            <input asp-for="BannerImage" type="file" accept="image/*" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-accent file:text-white hover:file:bg-accent-dark file:cursor-pointer transition-all duration-200">
+                            <span asp-validation-for="BannerImage" class="text-red-400 text-sm"></span>
+                            <p class="text-gray-500 text-sm">Önerilen boyut: 1200x300px. Desteklenen formatlar: JPG, PNG, WEBP. Maksimum boyut: 5MB</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="bg-gradient-to-r from-red-500/10 to-red-600/10 backdrop-blur-sm rounded-2xl border border-red-500/20 overflow-hidden">
+                <div class="p-8">
+                    <div class="flex items-center mb-8">
+                        <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-red-400">Tehlike Bölgesi</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Delete Account Section -->
+                        <div class="p-6 bg-red-500/10 rounded-2xl border border-red-500/20">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h3 class="text-white font-semibold text-lg mb-2">Hesabı Sil</h3>
+                                    <p class="text-gray-400 mb-3">Hesabınızı ve tüm ilişkili verileri kalıcı olarak silin. Bu eylem geri alınamaz.</p>
+                                    <div class="text-sm text-red-300 space-y-1">
+                                        <p class="font-medium">Aşağıdaki veriler kalıcı olarak silinecektir:</p>
+                                        <ul class="list-disc list-inside ml-4 space-y-1 text-gray-400">
+                                            <li>Profil ve hesap bilgileriniz</li>
+                                            <li>Yüklediğiniz tüm şarkılar ve albümler</li>
+                                            <li>Oluşturduğunuz tüm çalma listeleri</li>
+                                            <li>Tüm yorumlar ve beğeniler</li>
+                                            <li>Tüm takipçi ve takip etme ilişkileri</li>
+                                            <li>Tüm mesajlar ve bildirimler</li>
+                                            <li>Dinleme geçmişiniz</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="toggleDeleteSection()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 whitespace-nowrap">
+                                    Hesabı Sil
+                                </button>
+                            </div>
+
+                            <!-- Delete Account Form (Hidden by default) -->
+                            <div id="delete-account-section" class="hidden bg-red-900/30 border border-red-700/50 rounded-xl p-6 mt-6 space-y-4">
+                                <div class="bg-red-800/30 border border-red-600/50 rounded-lg p-4 mb-4">
+                                    <div class="flex items-start">
+                                        <i data-lucide="alert-triangle" class="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0"></i>
+                                        <div class="text-red-200">
+                                            <p class="font-semibold mb-2">⚠️ Uyarı: Bu işlem geri alınamaz!</p>
+                                            <p class="text-sm">Hesabınızı sildiğinizde, tüm verileriniz sunucularımızdan kalıcı olarak kaldırılacaktır. Şarkılarınızı, çalma listelerinizi veya diğer içeriklerinizi geri alamayacaksınız.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="flex items-center space-x-3">
+                                        <input asp-for="RequestAccountDeletion" type="checkbox" class="rounded border-red-600 text-red-600 focus:ring-red-500 w-5 h-5">
+                                        <span class="text-white font-medium">Evet, bu işlemin kalıcı olduğunu anlıyorum ve hesabımı silmek istiyorum</span>
+                                    </label>
+                                </div>
+                                <div class="space-y-2">
+                                    <label asp-for="DeleteAccountPassword" class="block text-sm font-semibold text-gray-300">Şifrenizle onaylayın</label>
+                                    <input asp-for="DeleteAccountPassword" type="password" class="w-full lg:w-1/2 bg-white/5 border border-red-500/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all duration-200" placeholder="Onaylamak için şifrenizi girin">
+                                    <span asp-validation-for="DeleteAccountPassword" class="text-red-400 text-sm"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-6 pt-8">
+                <a href="/" class="text-gray-400 hover:text-white transition-colors duration-200 flex items-center">
+                    <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                    Ana Sayfaya Dön
+                </a>
+                <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                    <button type="button" id="resetChangesBtn" class="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 backdrop-blur-sm border border-white/10">
+                        Değişiklikleri Sıfırla
+                    </button>
+                    <button type="submit" id="saveChangesBtn" class="bg-gradient-to-r from-accent to-accent-dark hover:from-accent-dark hover:to-accent text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 flex items-center justify-center">
+                        <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                        Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Unsaved Changes Modal -->
+<div id="unsavedChangesModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-md w-full border border-white/20">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mr-4">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">Kaydedilmemiş Değişiklikler</h3>
+            </div>
+            <p class="text-gray-300 mb-8 leading-relaxed">Kaydedilmemiş değişiklikleriniz var. Bu sayfadan ayrılmak istediğinizden emin misiniz?</p>
+            <div class="flex justify-end space-x-4">
+                <button onclick="cancelLeave()" class="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
+                    İptal
+                </button>
+                <button onclick="confirmLeave()" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105">
+                    Ayrıl
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Interactive Elements -->
+<script src="~/js/user/accountSettings.js"></script>
+
+@section Scripts {
+    <style>
+        /* Custom Toggle Switch Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 56px;
+            height: 28px;
+            cursor: pointer;
+        }
+
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #374151;
+            border: 1px solid #4B5563;
+            border-radius: 28px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 2px;
+            top: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-input:checked + .toggle-slider {
+            background-color: #1DB954 !important;
+            border-color: #1DB954;
+        }
+
+        .toggle-input:checked + .toggle-slider:before {
+            transform: translateX(28px);
+        }
+
+        .toggle-input:focus + .toggle-slider {
+            box-shadow: 0 0 0 4px rgba(29, 185, 84, 0.25);
+        }
+
+        .toggle-switch:hover .toggle-slider {
+            background-color: #4B5563;
+        }
+
+        .toggle-input:checked + .toggle-slider:hover {
+            background-color: #16a34a !important;
+        }
+
+        /* Fix select dropdown options */
+        select option {
+            background-color: #1f2937 !important;
+            color: white !important;
+            padding: 8px 12px;
+        }
+        
+        select option:checked,
+        select option:hover {
+            background-color: #1DB954 !important;
+            color: white !important;
+        }
+
+        /* Ensure toggle switches are visible */
+        .toggle-switch,
+        .toggle-slider,
+        .toggle-input {
+            display: block !important;
+            visibility: visible !important;
+        }
+    </style>
+    
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // Ensure toggle switches are working
+            const toggles = document.querySelectorAll('.toggle-input');
+            toggles.forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    console.log('Toggle changed:', this.name, this.checked);
+                });
+            });
+        });
+    </script>
+}
