@@ -1,5 +1,5 @@
 
-> **🤖 AI-Powered Development**: Eryth uygulamasını %90'ını yapay zeka (GitHub Copilot) ile birlikte geliştirdim.
+> **🤖 AI-Powered Development**: Eryth uygulamasının %90'ını yapay zeka (GitHub Copilot) ile birlikte geliştirdim.
 
 # 🎵 Eryth - Modern Müzik Platformu
 
