@@ -139,9 +139,9 @@ namespace Eryth.Controllers
 
             try
             {
-                // Girdi temizleme
-                userId = SanitizeInput(userId);
-                token = SanitizeInput(token);
+                // Validate inputs (don't HTML encode - these are IDs/tokens, not display text)
+                userId = userId.Trim();
+                token = token.Trim();
 
                 var result = await _authService.ConfirmEmailAsync(userId, token);
                 if (result.Success)

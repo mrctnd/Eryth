@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Eryth.Services;
 using Eryth.ViewModels;
+using Eryth.Constants;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -72,13 +73,13 @@ namespace Eryth.Controllers
             }
 
             // Dosya güvenlik kontrolü
-            if (model.AudioFile != null && !IsValidFileUpload(model.AudioFile, new[] { ".mp3", ".wav", ".flac", ".m4a" }, 50 * 1024 * 1024)) // 50MB limit
+            if (model.AudioFile != null && !IsValidFileUpload(model.AudioFile, AppConstants.AllowedAudioExtensions, AppConstants.MaxAudioFileSizeBytes))
             {
                 ModelState.AddModelError("AudioFile", "Geçersiz dosya formatı veya boyutu. Desteklenen formatlar: MP3, WAV, FLAC, M4A (Max: 50MB)");
                 return View(model);
             }
 
-            if (model.CoverImage != null && !IsValidFileUpload(model.CoverImage, new[] { ".jpg", ".jpeg", ".png", ".webp" }, 5 * 1024 * 1024)) // 5MB limit
+            if (model.CoverImage != null && !IsValidFileUpload(model.CoverImage, AppConstants.AllowedImageExtensions, AppConstants.MaxImageFileSizeBytes))
             {
                 ModelState.AddModelError("CoverImage", "Geçersiz resim formatı veya boyutu. Desteklenen formatlar: JPG, PNG, WEBP (Max: 5MB)");
                 return View(model);
@@ -304,7 +305,7 @@ namespace Eryth.Controllers
                 var tracks = await _trackService.GetUserTracksAsync(userId, userId, validPage, pageSize);
 
                 ViewBag.CurrentPage = validPage;
-                ViewBag.HasNextPage = tracks.Count() == pageSize;
+                ViewBag.HasNextPage = tracks.Count() >= pageSize;
 
                 return View(tracks);
             }
@@ -322,6 +323,7 @@ namespace Eryth.Controllers
 
         // Track güncelleme API endpoint'i
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateTrack([FromBody] EditTrackViewModel request)
         {
             try
@@ -336,14 +338,14 @@ namespace Eryth.Controllers
                 }
 
                 // Track'i güncelle
-                track.Title = request.Title?.Trim() ?? track.Title;
-                track.Description = request.Description?.Trim();
+                track.Title = SanitizeInput(request.Title?.Trim()) ?? track.Title;
+                track.Description = SanitizeInput(request.Description?.Trim());
                 track.Genre = request.Genre;
-                track.SubGenre = request.SubGenre?.Trim();
-                track.Composer = request.Composer?.Trim();
-                track.Producer = request.Producer?.Trim();
-                track.Lyricist = request.Lyricist?.Trim();
-                track.Copyright = request.Copyright?.Trim();
+                track.SubGenre = SanitizeInput(request.SubGenre?.Trim());
+                track.Composer = SanitizeInput(request.Composer?.Trim());
+                track.Producer = SanitizeInput(request.Producer?.Trim());
+                track.Lyricist = SanitizeInput(request.Lyricist?.Trim());
+                track.Copyright = SanitizeInput(request.Copyright?.Trim());
                 track.ReleaseDate = request.ReleaseDate;
                 track.IsExplicit = request.IsExplicit;
                 track.AllowComments = request.AllowComments;

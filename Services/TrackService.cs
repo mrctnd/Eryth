@@ -48,13 +48,13 @@ namespace Eryth.Services
                 _logger.LogError(ex, "Error getting all tracks for page {Page}", page);
                 return Enumerable.Empty<TrackViewModel>();
             }
-        }        public async Task<Track?> GetTrackByIdAsync(Guid id)
+        }
+
+        public async Task<Track?> GetTrackByIdAsync(Guid id)
         {
             return await _context.Tracks
                 .Include(t => t.Artist)
                 .Include(t => t.Album)
-                .Include(t => t.Likes)
-                .Include(t => t.Comments)
                 .FirstOrDefaultAsync(t => t.Id == id && t.DeletedAt == null);
         }        public async Task<Track?> GetByIdAsync(Guid id)
         {
@@ -308,42 +308,6 @@ namespace Eryth.Services
 
             await _context.SaveChangesAsync();
             return true;
-        }
-
-        public async Task<TrackViewModel> IncrementPlayCountAsync(Guid trackId, Guid userId)
-        {
-            try
-            {
-                var track = await _context.Tracks
-                    .Include(t => t.Artist)
-                    .Include(t => t.Likes)
-                    .FirstOrDefaultAsync(t => t.Id == trackId);
-
-                if (track == null)
-                    throw new ArgumentException("Track not found", nameof(trackId));
-
-                track.PlayCount++;
-
-                // Record play history if user is provided
-                if (userId != Guid.Empty)
-                {
-                    var playHistory = new UserPlayHistory
-                    {
-                        UserId = userId,
-                        TrackId = trackId,
-                        PlayedAt = DateTime.UtcNow
-                    };
-                    _context.UserPlayHistories.Add(playHistory);
-                }
-
-                await _context.SaveChangesAsync();
-                return TrackViewModel.FromTrack(track, false, false, false, false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error incrementing play count for track {TrackId}", trackId);
-                throw;
-            }
         }
 
         public async Task<IEnumerable<TrackViewModel>> GetTrendingTracksAsync(int page = 1, int pageSize = 20)

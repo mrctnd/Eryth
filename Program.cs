@@ -62,7 +62,9 @@ if (!app.Environment.IsDevelopment())
 app.UseResponseCompression();
 app.UseHttpsRedirection();
 
-// Security headers
+app.UseStaticFiles();
+
+// Security headers (after UseStaticFiles to avoid overhead on static file requests)
 app.Use(async (context, next) =>
 {
     context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
@@ -71,8 +73,6 @@ app.Use(async (context, next) =>
     context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
     await next();
 });
-
-app.UseStaticFiles();
 
 app.UseRequestLocalization();
 

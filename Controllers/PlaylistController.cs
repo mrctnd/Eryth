@@ -14,12 +14,14 @@ namespace Eryth.Controllers
         private readonly IPlaylistService _playlistService;
         private readonly ILikeService _likeService;
         private readonly IFileUploadService _fileUploadService;
-        
-        public PlaylistController(IPlaylistService playlistService, ILikeService likeService, IFileUploadService fileUploadService, IMemoryCache cache) : base(cache)
+        private readonly ILogger<PlaylistController> _logger;
+
+        public PlaylistController(IPlaylistService playlistService, ILikeService likeService, IFileUploadService fileUploadService, IMemoryCache cache, ILogger<PlaylistController> logger) : base(cache)
         {
             _playlistService = playlistService;
             _likeService = likeService;
             _fileUploadService = fileUploadService;
+            _logger = logger;
         }
 
         // Çalma listesi detay sayfası
@@ -255,14 +257,14 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                // Hata ayıklama için gerçek hatayı kaydet
-                Console.WriteLine($"AddTrack Error: {ex.Message}");
+                _logger.LogError(ex, "Error adding track to playlist");
                 return ErrorResult("Müzik eklenirken bir hata oluştu");
             }
         }
 
         // Çalma listesinden müzik çıkarma
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveTrack(Guid playlistId, Guid trackId)
         {
             try
@@ -289,6 +291,7 @@ namespace Eryth.Controllers
 
         // Çalma listesi beğenme/beğenmeme işlemi
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleLike(Guid id)
         {
             try
@@ -316,26 +319,20 @@ namespace Eryth.Controllers
                 }
 
                 var isLiked = await _likeService.IsPlaylistLikedAsync(id, userId);
-                Console.WriteLine($"Playlist {id} is currently liked by user {userId}: {isLiked}");
 
                 bool success;
                 if (isLiked)
                 {
-                    Console.WriteLine($"Attempting to unlike playlist {id} for user {userId}");
                     success = await _likeService.UnlikePlaylistAsync(id, userId);
-                    Console.WriteLine($"Unlike result: {success}");
                 }
                 else
                 {
-                    Console.WriteLine($"Attempting to like playlist {id} for user {userId}");
                     success = await _likeService.LikePlaylistAsync(id, userId);
-                    Console.WriteLine($"Like result: {success}");
                 }
 
                 if (success)
                 {
                     var likeCount = await _likeService.GetPlaylistLikeCountAsync(id);
-                    Console.WriteLine($"Like count after operation: {likeCount}");
                     return SuccessResult(new { isLiked = !isLiked, likeCount });
                 }
 
@@ -343,10 +340,8 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                // Log the actual exception for debugging
-                Console.WriteLine($"ToggleLike error: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
-                return ErrorResult($"İşlem gerçekleştirilemedi: {ex.Message}");
+                _logger.LogError(ex, "Error toggling like for playlist {PlaylistId}", id);
+                return ErrorResult("İşlem gerçekleştirilemedi");
             }
         }
 
@@ -361,7 +356,7 @@ namespace Eryth.Controllers
                 var playlists = await _playlistService.GetUserPlaylistsAsync(userId, userId, validPage, pageSize);
 
                 ViewBag.CurrentPage = validPage;
-                ViewBag.HasNextPage = playlists.Count() == pageSize;
+                ViewBag.HasNextPage = playlists.Count() >= pageSize;
 
                 return View(playlists);
             }
@@ -387,7 +382,7 @@ namespace Eryth.Controllers
                 var playlists = await _likeService.GetLikedPlaylistsAsync(userId, validPage, pageSize);
 
                 ViewBag.CurrentPage = validPage;
-                ViewBag.HasNextPage = playlists.Count() == pageSize;
+                ViewBag.HasNextPage = playlists.Count() >= pageSize;
 
                 return View(playlists);
             }
@@ -446,7 +441,8 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                return ErrorResult("Çalma listesi kopyalanırken bir hata oluştu: " + ex.Message);
+                _logger.LogError(ex, "Error duplicating playlist {PlaylistId}", id);
+                return ErrorResult("Çalma listesi kopyalanırken bir hata oluştu");
             }
         }
     }

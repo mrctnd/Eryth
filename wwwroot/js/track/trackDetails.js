@@ -1,3 +1,14 @@
+// HTML escape helper to prevent XSS
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   // Initialize Lucide icons
   if (typeof lucide !== "undefined") {
@@ -116,7 +127,7 @@ function loadArtistInfo() {
           const avatarContainer = artistInfo.querySelector(".w-16.h-16");
           if (avatarContainer) {
             console.log("Updating avatar with:", data.profileImageUrl);
-            avatarContainer.innerHTML = `<img src="/${data.profileImageUrl}" alt="${data.displayName}" class="w-16 h-16 rounded-full object-cover">`;
+            avatarContainer.innerHTML = `<img src="/${escapeHtml(data.profileImageUrl)}" alt="${escapeHtml(data.displayName)}" class="w-16 h-16 rounded-full object-cover">`;
           }
         }
 
@@ -170,7 +181,7 @@ function loadComments() {
                                 <div class="flex items-start space-x-3">
                                     ${
                                       comment.userProfileImageUrl
-                                        ? `<img src="${comment.userProfileImageUrl.startsWith('/') ? comment.userProfileImageUrl : '/' + comment.userProfileImageUrl}" alt="${comment.userDisplayName}" class="w-10 h-10 rounded-full object-cover">`
+                                        ? `<img src="${escapeHtml(comment.userProfileImageUrl.startsWith('/') ? comment.userProfileImageUrl : '/' + comment.userProfileImageUrl)}" alt="${escapeHtml(comment.userDisplayName)}" class="w-10 h-10 rounded-full object-cover">`
                                         : `<div class="w-10 h-10 rounded-full bg-green-600/20 flex items-center justify-center">
                                             <i data-lucide="user" class="w-5 h-5 text-white"></i>
                                            </div>`
@@ -178,14 +189,14 @@ function loadComments() {
                                     <div class="flex-1">
                                         <div class="flex items-center space-x-2 mb-1">
                                             <span class="text-white font-medium">${
-                                              comment.userDisplayName
+                                              escapeHtml(comment.userDisplayName)
                                             }</span>
                                             <span class="text-gray-400 text-sm">${
-                                              comment.relativeCreatedDate
+                                              escapeHtml(comment.relativeCreatedDate)
                                             }</span>
                                         </div>
                                         <p class="text-gray-300">${
-                                          comment.content
+                                          escapeHtml(comment.content)
                                         }</p>
                                     </div>
                                 </div>
@@ -257,7 +268,7 @@ function loadRelatedTracks() {
                                  }'">
                                 <div class="w-12 h-12 rounded-lg overflow-hidden">                                    ${
                                   track.coverImageUrl
-                                    ? `<img src="/${track.coverImageUrl}" alt="${track.title}" class="w-full h-full object-cover">`
+                                    ? `<img src="/${escapeHtml(track.coverImageUrl)}" alt="${escapeHtml(track.title)}" class="w-full h-full object-cover">`
                                     : `<div class="w-full h-full bg-green-600/20 flex items-center justify-center">
                                             <i data-lucide="music" class="w-6 h-6 text-green-400"></i>
                                         </div>`
@@ -265,7 +276,7 @@ function loadRelatedTracks() {
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-white font-medium truncate">${
-                                      track.title
+                                      escapeHtml(track.title)
                                     }</p>
                                     <p class="text-gray-400 text-sm">${
                                       track.formattedDuration

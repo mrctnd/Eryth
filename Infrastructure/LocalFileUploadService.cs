@@ -21,7 +21,8 @@ namespace Eryth.Infrastructure
             { ".wav", new[] { new byte[] { 0x52, 0x49, 0x46, 0x46 } } },
             { ".flac", new[] { new byte[] { 0x66, 0x4C, 0x61, 0x43 } } },
             { ".ogg", new[] { new byte[] { 0x4F, 0x67, 0x67, 0x53 } } },
-            { ".aac", new[] { new byte[] { 0xFF, 0xF1 }, new byte[] { 0xFF, 0xF9 } } }
+            { ".aac", new[] { new byte[] { 0xFF, 0xF1 }, new byte[] { 0xFF, 0xF9 } } },
+            { ".m4a", new[] { new byte[] { 0x66, 0x74, 0x79, 0x70 } } } // "ftyp" at offset 4 - checked separately below
         };
 
         public LocalFileUploadService(IWebHostEnvironment environment)
@@ -125,14 +126,28 @@ namespace Eryth.Infrastructure
             }
 
             using var reader = new BinaryReader(file.OpenReadStream());
+
+            // M4A/MP4 files have "ftyp" at offset 4, not at the beginning
+            if (extension == ".m4a")
+            {
+                var header = reader.ReadBytes(8);
+                var isValid = header.Length >= 8 &&
+                    header[4] == 0x66 && header[5] == 0x74 && header[6] == 0x79 && header[7] == 0x70; // "ftyp"
+                if (!isValid)
+                {
+                    throw new ArgumentException($"File content does not match the expected format for {extension}");
+                }
+                return;
+            }
+
             var maxLength = signatures.Max(s => s.Length);
             var headerBytes = reader.ReadBytes(maxLength);
 
-            var isValid = signatures.Any(signature =>
+            var isValidSignature = signatures.Any(signature =>
                 headerBytes.Length >= signature.Length &&
                 headerBytes.Take(signature.Length).SequenceEqual(signature));
 
-            if (!isValid)
+            if (!isValidSignature)
             {
                 throw new ArgumentException($"File content does not match the expected format for {extension}");
             }

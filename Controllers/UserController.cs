@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Eryth.Services;
 using Eryth.ViewModels;
+using Eryth.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Eryth.Controllers
@@ -15,6 +16,9 @@ namespace Eryth.Controllers
         private readonly ITrackService _trackService;
         private readonly IPlaylistService _playlistService;
         private readonly ILikeService _likeService;
+        private readonly ICommentService _commentService;
+        private readonly IAuthService _authService;
+        private readonly IFileUploadService _fileUploadService;
         private readonly ILogger<UserController> _logger;
 
         public UserController(
@@ -23,6 +27,9 @@ namespace Eryth.Controllers
             ITrackService trackService,
             IPlaylistService playlistService,
             ILikeService likeService,
+            ICommentService commentService,
+            IAuthService authService,
+            IFileUploadService fileUploadService,
             IMemoryCache cache,
             ILogger<UserController> logger) : base(cache)
         {
@@ -31,6 +38,9 @@ namespace Eryth.Controllers
             _trackService = trackService;
             _playlistService = playlistService;
             _likeService = likeService;
+            _commentService = commentService;
+            _authService = authService;
+            _fileUploadService = fileUploadService;
             _logger = logger;
         }
 
@@ -215,8 +225,7 @@ namespace Eryth.Controllers
                     if (deleteResult)
                     {
                         // Kullanıcıyı çıkış yap
-                        var authService = HttpContext.RequestServices.GetRequiredService<IAuthService>();
-                        await authService.LogoutAsync();
+                        await _authService.LogoutAsync();
 
                         TempData["Success"] = "Your account and all associated data have been permanently deleted. Thank you for using Eryth.";
                         return RedirectToAction("Index", "Home");
@@ -237,8 +246,7 @@ namespace Eryth.Controllers
                         return View(model);
                     }
 
-                    var authService = HttpContext.RequestServices.GetRequiredService<IAuthService>();
-                    var passwordChangeResult = await authService.ChangePasswordAsync(userId, model.CurrentPassword, model.NewPassword);
+                    var passwordChangeResult = await _authService.ChangePasswordAsync(userId, model.CurrentPassword, model.NewPassword);
 
                     if (!passwordChangeResult)
                     {
@@ -258,19 +266,7 @@ namespace Eryth.Controllers
 
                     try
                     {
-                        // Basit dosya yükleme - wwwroot/uploads/profiles klasörüne kaydet
-                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
-                        Directory.CreateDirectory(uploadsFolder);
-
-                        var fileName = $"{userId}_{DateTime.UtcNow:yyyyMMddHHmmss}{Path.GetExtension(model.ProfileImage.FileName)}";
-                        var filePath = Path.Combine(uploadsFolder, fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await model.ProfileImage.CopyToAsync(stream);
-                        }
-
-                        var profileImageUrl = $"/uploads/profiles/{fileName}";
+                        var profileImageUrl = await _fileUploadService.UploadImageAsync(model.ProfileImage, "profiles");
                         await _userService.UploadProfileImageAsync(userId, profileImageUrl);
                     }
                     catch (Exception ex)
@@ -293,19 +289,7 @@ namespace Eryth.Controllers
 
                     try
                     {
-                        // Banner resmi için uploads/banners klasörüne kaydet
-                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "banners");
-                        Directory.CreateDirectory(uploadsFolder);
-
-                        var fileName = $"{userId}_{DateTime.UtcNow:yyyyMMddHHmmss}{Path.GetExtension(model.BannerImage.FileName)}";
-                        var filePath = Path.Combine(uploadsFolder, fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await model.BannerImage.CopyToAsync(stream);
-                        }
-
-                        var bannerImageUrl = $"/uploads/banners/{fileName}";
+                        var bannerImageUrl = await _fileUploadService.UploadImageAsync(model.BannerImage, "banners");
                         await _userService.UploadBannerImageAsync(userId, bannerImageUrl);
                     }
                     catch (Exception ex)
@@ -454,7 +438,7 @@ namespace Eryth.Controllers
 
                 ViewBag.Username = username;
                 ViewBag.CurrentPage = validPage;
-                ViewBag.HasNextPage = followers.Count() == pageSize;
+                ViewBag.HasNextPage = followers.Count() >= pageSize;
 
                 return View(followers);
             }
@@ -484,7 +468,7 @@ namespace Eryth.Controllers
 
                 ViewBag.Username = username;
                 ViewBag.CurrentPage = validPage;
-                ViewBag.HasNextPage = following.Count() == pageSize;
+                ViewBag.HasNextPage = following.Count() >= pageSize;
 
                 return View(following);
             }
@@ -507,7 +491,7 @@ namespace Eryth.Controllers
                 var tracks = await _likeService.GetLikedTracksAsync(userId, validPage, pageSize);
 
                 ViewBag.CurrentPage = validPage;
-                ViewBag.HasNextPage = tracks.Count() == pageSize;
+                ViewBag.HasNextPage = tracks.Count() >= pageSize;
 
                 return View(tracks);
             }
@@ -550,7 +534,7 @@ namespace Eryth.Controllers
 
                 ViewBag.Query = query;
                 ViewBag.CurrentPage = validPage;
-                ViewBag.HasNextPage = users.Count() == pageSize;
+                ViewBag.HasNextPage = users.Count() >= pageSize;
 
                 return View(users);
             }
@@ -593,13 +577,12 @@ namespace Eryth.Controllers
                 }
 
                 var (validPage, pageSize) = ValidatePagination(page, 20);
-                var commentService = HttpContext.RequestServices.GetRequiredService<ICommentService>();
-                var comments = await commentService.GetUserCommentsAsync(user.Id, validPage, pageSize);
+                var comments = await _commentService.GetUserCommentsAsync(user.Id, validPage, pageSize);
 
                 ViewBag.Username = username;
                 ViewBag.DisplayName = user.DisplayName ?? username;
                 ViewBag.CurrentPage = validPage;
-                ViewBag.HasNextPage = comments.Count() == pageSize;
+                ViewBag.HasNextPage = comments.Count() >= pageSize;
 
                 return View(comments);
             }

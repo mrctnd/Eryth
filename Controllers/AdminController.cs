@@ -16,6 +16,7 @@ namespace Eryth.Controllers
         private readonly ICommentService _commentService;
         private readonly INotificationService _notificationService;
         private readonly IReportService _reportService;
+        private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             IUserService userService,
@@ -24,7 +25,8 @@ namespace Eryth.Controllers
             ICommentService commentService,
             INotificationService notificationService,
             IReportService reportService,
-            IMemoryCache cache) : base(cache)
+            IMemoryCache cache,
+            ILogger<AdminController> logger) : base(cache)
         {
             _userService = userService;
             _trackService = trackService;
@@ -32,6 +34,7 @@ namespace Eryth.Controllers
             _commentService = commentService;
             _notificationService = notificationService;
             _reportService = reportService;
+            _logger = logger;
         }
 
         // Yönetim Paneli
@@ -43,7 +46,7 @@ namespace Eryth.Controllers
                 var currentUserId = GetRequiredUserId();
                 var currentUser = await _userService.GetByIdAsync(currentUserId);
 
-                if (currentUser == null || (currentUser.Role != UserRole.Admin && currentUser.Role != UserRole.Moderator))
+                if (currentUser == null)
                 {
                     return Forbid();
                 }
@@ -74,8 +77,9 @@ namespace Eryth.Controllers
 
                 return View(dashboardViewModel);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading admin dashboard");
                 TempData["Error"] = "Dashboard yüklenirken bir hata oluştu";
                 return RedirectToAction("Index", "Home");
             }

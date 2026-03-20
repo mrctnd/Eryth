@@ -32,7 +32,6 @@ namespace Eryth.Services
                 return null!;
 
             var albumViewModel = AlbumViewModel.FromAlbum(album, currentUserId == album.ArtistId);
-            System.Diagnostics.Debug.WriteLine($"Album {album.Title} cover URL: {album.CoverImageUrl}");
             return albumViewModel;
         }
 
@@ -87,7 +86,6 @@ namespace Eryth.Services
                 try
                 {
                     coverImageUrl = await _fileUploadService.UploadImageAsync(model.CoverImage, "albums");
-                    System.Diagnostics.Debug.WriteLine($"Album cover uploaded: {coverImageUrl}");
                 }
                 catch (Exception ex)
                 {
@@ -97,7 +95,6 @@ namespace Eryth.Services
             else if (!string.IsNullOrEmpty(model.CoverImageUrl))
             {
                 coverImageUrl = model.CoverImageUrl;
-                System.Diagnostics.Debug.WriteLine($"Album cover URL provided: {coverImageUrl}");
             }
 
             var album = new Album

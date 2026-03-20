@@ -25,7 +25,7 @@ namespace Eryth.Services
         Task<IEnumerable<Track>> GetPopularTracksAsync(int count = 10);
         Task<IEnumerable<Track>> GetRecentTracksAsync(int count = 10);
         Task<bool> IncrementPlayCountAsync(Guid trackId, Guid? userId = null);
-        Task<TrackViewModel> IncrementPlayCountAsync(Guid trackId, Guid userId);        // New methods for HomeController
+        // New methods for HomeController
         Task<IEnumerable<TrackViewModel>> GetTrendingTracksAsync(int page = 1, int pageSize = 20);
         Task<IEnumerable<TrackViewModel>> GetDiscoverTracksAsync(Guid userId, int page = 1, int pageSize = 20);
         Task<IEnumerable<TrackViewModel>> SearchTracksAsync(string query, int page = 1, int pageSize = 20);        // Admin-specific methods

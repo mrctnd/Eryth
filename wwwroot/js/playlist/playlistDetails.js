@@ -1,3 +1,14 @@
+// HTML escape helper to prevent XSS
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
 // Playlist Details JavaScript Functions
 document.addEventListener("DOMContentLoaded", function () {
     // Initialize Lucide icons
@@ -479,8 +490,8 @@ function displaySearchResults(tracks) {
              onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'">
             <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0;">
                 <div style="width: 48px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, rgba(0,255,135,0.2), rgba(0,0,0,1)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(0,255,135,0.3); overflow: hidden;">
-                    ${imageUrl ? 
-                        `<img src="${imageUrl}" alt="${track.title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    ${imageUrl ?
+                        `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(track.title)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                          <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center;">
                              <i data-lucide="music" style="width: 24px; height: 24px; color: #00ff87;"></i>
                          </div>` :
@@ -488,8 +499,8 @@ function displaySearchResults(tracks) {
                     }
                 </div>
                 <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
-                    <h4 style="color: white; font-weight: 500; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">${track.title}</h4>
-                    <p style="color: #999; font-size: 14px; margin: 2px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;">${track.artistName}</p>
+                    <h4 style="color: white; font-weight: 500; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">${escapeHtml(track.title)}</h4>
+                    <p style="color: #999; font-size: 14px; margin: 2px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;">${escapeHtml(track.artistName)}</p>
                 </div>
                 <div style="color: #999; font-size: 14px; flex-shrink: 0; margin-right: 12px;">
                     ${track.formattedDuration || ''}

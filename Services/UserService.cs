@@ -10,10 +10,12 @@ namespace Eryth.Services
     public class UserService : IUserService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(ApplicationDbContext context)
+        public UserService(ApplicationDbContext context, ILogger<UserService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<User?> GetByIdAsync(Guid id)
@@ -24,8 +26,9 @@ namespace Eryth.Services
                 .Include(u => u.Playlists)
                 .Include(u => u.Followers)
                 .Include(u => u.Following)
-                .FirstOrDefaultAsync(u => u.Id == id);
-        }        
+                .FirstOrDefaultAsync(u => u.Id == id && u.DeletedAt == null);
+        }
+
         public async Task<User?> GetByUsernameAsync(string username)
         {
             return await _context.Users
@@ -34,13 +37,13 @@ namespace Eryth.Services
                 .Include(u => u.Playlists.Where(p => p.Privacy == PlaylistPrivacy.Public))
                 .Include(u => u.Followers)
                 .Include(u => u.Following)
-                .FirstOrDefaultAsync(u => u.Username == username);
+                .FirstOrDefaultAsync(u => u.Username == username && u.DeletedAt == null);
         }
 
         public async Task<User?> GetByEmailAsync(string email)
         {
             return await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Email == email && u.DeletedAt == null);
         }
 
         public async Task<UserProfileViewModel> GetProfileAsync(Guid userId, Guid currentUserId)
@@ -55,7 +58,7 @@ namespace Eryth.Services
         {
             var users = await _context.Users
                 .AsNoTracking()
-                .Where(u => u.Username.Contains(query) || u.DisplayName.Contains(query))
+                .Where(u => u.DeletedAt == null && (u.Username.Contains(query) || u.DisplayName.Contains(query)))
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -300,8 +303,9 @@ namespace Eryth.Services
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting account for user {UserId}", userId);
                 await transaction.RollbackAsync();
                 return false;
             }

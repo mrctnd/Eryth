@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(dotnet build *)",
+      "Bash(dotnet run *)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet ef *)",
+      "Bash(npm install *)",
+      "Bash(npm run build-css *)",
+      "Bash(npm run build-css-prod *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git branch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Bash(gh pr *)",
+      "Bash(gh issue *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(DROP *)",
+      "Bash(DELETE FROM *)"
+    ]
+  },
+  "autoMemoryEnabled": true,
+  "env": {
+    "MAX_MCP_OUTPUT_TOKENS": "30000"
+  }
+}

@@ -1,3 +1,14 @@
+// HTML escape helper to prevent XSS
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   lucide.createIcons();
   setupUserSearch();
@@ -63,24 +74,24 @@ function setupUserSearch() {
       searchResults.innerHTML = users
         .map(
           (user) => `
-                    <div class="search-result-item p-3 hover:bg-white/10 cursor-pointer transition-colors duration-200 border-b border-white/10 last:border-b-0" 
-                         data-user-id="${user.id}" 
-                         data-username="${user.username}"
-                         data-display-name="${user.displayName}">
+                    <div class="search-result-item p-3 hover:bg-white/10 cursor-pointer transition-colors duration-200 border-b border-white/10 last:border-b-0"
+                         data-user-id="${escapeHtml(user.id)}"
+                         data-username="${escapeHtml(user.username)}"
+                         data-display-name="${escapeHtml(user.displayName)}">
                         <div class="flex items-center space-x-3">
                             <div class="w-8 h-8 bg-gradient-to-br from-accent/20 to-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
                                 ${
                                   user.profileImageUrl
-                                    ? `<img src="${user.profileImageUrl}" alt="${user.displayName}" class="w-8 h-8 rounded-full object-cover">`
+                                    ? `<img src="${escapeHtml(user.profileImageUrl)}" alt="${escapeHtml(user.displayName)}" class="w-8 h-8 rounded-full object-cover">`
                                     : `<i data-lucide="user" class="w-4 h-4 text-accent"></i>`
                                 }
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-white font-medium text-sm truncate">${
-                                  user.displayName
+                                  escapeHtml(user.displayName)
                                 }</p>
                                 <p class="text-gray-400 text-xs truncate">@@${
-                                  user.username
+                                  escapeHtml(user.username)
                                 }</p>
                             </div>
                         </div>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Eryth.Services;
 using Eryth.ViewModels;
 using Eryth.Utilities;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Eryth.Controllers
 {
@@ -20,7 +21,8 @@ namespace Eryth.Controllers
             ITrackService trackService,
             IPlaylistService playlistService,
             IUserService userService,
-            ILogger<CommentController> logger)
+            ILogger<CommentController> logger,
+            IMemoryCache cache) : base(cache)
         {
             _commentService = commentService;
             _trackService = trackService;
