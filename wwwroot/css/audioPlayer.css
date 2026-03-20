@@ -1,198 +1,212 @@
-/* Audio Player Custom Styles */
+/* ─── Audio Player Bar ────────────────────────────────────────────────────────
+   Fixed bottom bar, starts below viewport and slides up when .visible is added.
+   Main content gets padding-bottom via body.player-visible to avoid overlap.
+──────────────────────────────────────────────────────────────────────────────*/
 
-/* Volume Slider Custom Styling */
-.slider {
-    -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    cursor: pointer;
-}
-
-.slider::-webkit-slider-track {
-    background: #4A5568;
-    height: 4px;
-    border-radius: 2px;
-}
-
-.slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    background: #1DB954;
-    height: 12px;
-    width: 12px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
-}
-
-.slider::-webkit-slider-thumb:hover {
-    background: #1ed760;
-    transform: scale(1.1);
-}
-
-.slider::-moz-range-track {
-    background: #4A5568;
-    height: 4px;
-    border-radius: 2px;
-    border: none;
-}
-
-.slider::-moz-range-thumb {
-    background: #1DB954;
-    height: 12px;
-    width: 12px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
-}
-
-.slider::-moz-range-thumb:hover {
-    background: #1ed760;
-    transform: scale(1.1);
-}
-
-/* Progress Bar Custom Styling */
-#progress-bar {
-    transition: all 0.2s ease;
-}
-
-#progress-bar:hover {
-    height: 6px;
-}
-
-#progress-bar:hover #progress-thumb {
-    opacity: 1 !important;
-    transform: translateY(-50%) scale(1.2);
-}
-
-#progress-fill {
-    transition: width 0.1s linear;
-}
-
-#progress-thumb {
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    z-index: 10;
-}
-
-/* Audio Player Animation */
-#audio-player {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#audio-player.show {
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#audio-player.hide {
-    transform: translateY(100%) !important;
-    opacity: 0 !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Audio Player Persistence Styles */
-#audio-player {
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-    perspective: 1000px;
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 40 !important;
-}
-
-/* Navigation State Indicator - REMOVED */
-
-/* Track Info Animation */
-#track-title, #track-artist {
-    transition: all 0.3s ease;
-}
-
-/* Volume Button Feedback */
-.volume-sync-feedback {
-    animation: volumeSyncPulse 0.6s ease-in-out;
-}
-
-@keyframes volumeSyncPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); color: #FF5500; }
-    100% { transform: scale(1); }
-}
-
-/* Track Thumbnail Animation */
-#track-thumbnail {
-    transition: all 0.3s ease;
-}
-
-#track-thumbnail:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(255, 85, 0, 0.3);
-}
-
-/* Volume Control Enhancement */
-#volume-button.active {
-    color: #FF5500 !important;
-    transform: scale(1.1);
-    transition: all 0.2s ease;
-}
-
-/* Persistent Player Indicator - REMOVED */
-
-/* Loading State */
-#audio-player.loading {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-#audio-player.loading::after {
-    content: '';
-    position: absolute;
-    top: 0;
+.audio-player-bar {
+    position: fixed;
+    bottom: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
+    height: 90px;
+    background: #121212;
+    border-top: 1px solid #282828;
+    z-index: 50;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.audio-player-bar.visible {
+    transform: translateY(0);
+}
+
+/* Main content padding when player is shown */
+body.player-visible #main-content {
+    padding-bottom: 90px;
+}
+
+/* Layout columns */
+.player-left,
+.player-right {
+    width: 30%;
+    flex-shrink: 0;
+}
+
+/* ─── Play button (white circle) ─────────────────────────────────────────────*/
+
+.player-play-btn {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    color: #000;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease;
+    flex-shrink: 0;
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
-    #audio-player {
+.player-play-btn:hover {
+    transform: scale(1.07);
+    background: #f0f0f0;
+}
+
+.player-play-btn svg,
+.player-play-btn i {
+    color: #000 !important;
+}
+
+/* ─── Generic player icon buttons ────────────────────────────────────────────*/
+
+.player-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.1s ease;
+    line-height: 0;
+}
+
+.player-btn:hover {
+    transform: scale(1.1);
+}
+
+/* ─── Progress bar ────────────────────────────────────────────────────────────*/
+
+.player-progress-track {
+    position: relative;
+    flex: 1;
+    height: 4px;
+    background: #4d4d4d;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: height 0.15s ease;
+}
+
+.player-progress-track:hover {
+    height: 6px;
+}
+
+.player-progress-fill {
+    height: 100%;
+    background: #b3b3b3;
+    border-radius: 2px;
+    transition: background 0.15s ease;
+    pointer-events: none;
+}
+
+.player-progress-track:hover .player-progress-fill {
+    background: #1DB954;
+}
+
+.player-progress-thumb {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.15s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.player-progress-track:hover .player-progress-thumb {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* ─── Volume slider ───────────────────────────────────────────────────────────*/
+
+.player-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 4px;
+    background: transparent;
+    cursor: pointer;
+    outline: none;
+}
+
+.player-volume-slider::-webkit-slider-runnable-track {
+    height: 4px;
+    background: #4d4d4d;
+    border-radius: 2px;
+}
+
+.player-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -4px;
+    transition: transform 0.1s ease;
+}
+
+.player-volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.player-volume-slider:hover::-webkit-slider-runnable-track {
+    background: #6d6d6d;
+}
+
+.player-volume-slider::-moz-range-track {
+    height: 4px;
+    background: #4d4d4d;
+    border-radius: 2px;
+    border: none;
+}
+
+.player-volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+}
+
+/* ─── Track thumbnail ─────────────────────────────────────────────────────────*/
+
+#track-thumbnail {
+    transition: opacity 0.3s ease;
+}
+
+/* ─── Tabular numbers for time display ───────────────────────────────────────*/
+
+#current-time,
+#duration {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Mobile responsive ───────────────────────────────────────────────────────*/
+
+@media (max-width: 640px) {
+    .audio-player-bar {
         height: auto;
-        padding: 0.75rem;
+        min-height: 70px;
+        padding: 8px 12px;
     }
-    
-    #audio-player .flex {
-        flex-direction: column;
-        gap: 0.5rem;
+
+    body.player-visible #main-content {
+        padding-bottom: 70px;
     }
-    
-    .slider {
-        width: 100px;
+
+    .player-right {
+        display: none;
     }
-    
-    #audio-player {
-        padding: 12px 16px;
-    }
-    
-    #audio-player .flex-1 {
-        margin: 0 16px;
-    }
-    
-    #track-thumbnail {
-        width: 40px;
-        height: 40px;
-    }
-    
-    #volume-slider {
-        width: 60px;
+
+    .player-left {
+        max-width: 45%;
     }
 }

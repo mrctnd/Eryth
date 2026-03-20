@@ -1,131 +1,199 @@
-// Audio player functionality moved to audioPlayer.js
+// ─── PJAX Navigation ──────────────────────────────────────────────────────────
+// Intercepts link clicks and swaps only #main-content + #page-scripts,
+// keeping the audio player and navbar alive so music never stops.
 
-// Page transition management with audio player preservation
-function setupPageTransitions() {
-    // Intercept all navigation links with enhanced audio player preservation
-    document.addEventListener('click', function(e) {
-        const link = e.target.closest('a');
-        
-        if (link && 
-            link.href && 
-            !link.href.startsWith('#') && 
-            !link.href.startsWith('javascript:') &&
-            !link.href.startsWith('mailto:') &&
-            !link.href.startsWith('tel:') &&
-            link.href.startsWith(window.location.origin) &&
-            !link.target &&
-            !link.hasAttribute('download')) {
-            
-            e.preventDefault();
-            
-            // Ensure audio player state is saved before navigation
-            if (typeof savePlayerState === 'function') {
-                savePlayerState();
-            }
-            
-            // Set navigation flag
-            sessionStorage.setItem('audioPlayer_navigating', 'true');
-            
-            // Show loading overlay
-            const overlay = document.getElementById('page-transition');
-            if (overlay) {
-                overlay.style.opacity = '1';
-                overlay.style.pointerEvents = 'auto';
-            }
-            
-            // Navigate after ensuring state is saved
-            setTimeout(() => {
-                window.location.href = link.href;
-            }, 150); // Slightly longer delay to ensure state persistence
-        }
-    });
-    
-    // Handle form submissions with audio player preservation
-    document.addEventListener('submit', function(e) {
-        const form = e.target;
-        
-        // Don't interfere with AJAX forms or specific forms
-        if (form.method && form.method.toLowerCase() === 'post' && !form.hasAttribute('data-ajax')) {
-            
-            // Save audio player state before form submission
-            if (typeof savePlayerState === 'function') {
-                savePlayerState();
-            }
-            
-            // Set navigation flag
-            sessionStorage.setItem('audioPlayer_navigating', 'true');
-            
-            // Show loading overlay for form submissions
-            const overlay = document.getElementById('page-transition');
-            if (overlay) {
-                setTimeout(() => {
-                    overlay.style.opacity = '1';
-                    overlay.style.pointerEvents = 'auto';
-                }, 50);
-            }
-        }
-    });
-    
-    // Hide loading overlay when page loads and restore audio state
-    window.addEventListener('load', function() {
-        const overlay = document.getElementById('page-transition');
-        if (overlay) {
-            setTimeout(() => {
-                overlay.style.opacity = '0';
-                overlay.style.pointerEvents = 'none';
-                
-                // Check if we need to restore audio player state
-                const wasNavigating = sessionStorage.getItem('audioPlayer_navigating');
-                if (wasNavigating && typeof loadPlayerState === 'function') {
-                    // Give the audio player module time to initialize
-                    setTimeout(() => {
-                        loadPlayerState();
-                    }, 200);
-                }
-            }, 100);
-        }
-    });
-    window.addEventListener('load', function() {
-        const overlay = document.getElementById('page-transition');
-        if (overlay) {
-            setTimeout(() => {
-                overlay.style.opacity = '0';
-                overlay.style.pointerEvents = 'none';
-            }, 200);
-        }
-    });
+let _pjaxLoading = false;
+
+function shouldPjaxNavigate(link) {
+    const href = link.href;
+    if (!href || href === window.location.href) return false;
+    if (href.startsWith('#')) return false;
+    if (href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return false;
+    if (!href.startsWith(window.location.origin)) return false;
+    if (link.hasAttribute('download')) return false;
+    if (link.target && link.target !== '_self') return false;
+    if (link.getAttribute('data-no-pjax') !== null) return false;
+
+    // Skip auth routes – they redirect & handle cookies specially
+    try {
+        const path = new URL(href).pathname;
+        if (path.startsWith('/Auth/') || path.startsWith('/Admin/')) return false;
+    } catch { return false; }
+
+    return true;
 }
 
-// Global functions for HTML onclick handlers
-function toggleDropdown(menuId) {
-    const menu = document.getElementById(menuId);
-    const isHidden = menu.classList.contains('hidden');
-    
-    // Close all dropdowns first
-    document.querySelectorAll('[id$="-menu"]').forEach(dropdown => {
-        dropdown.classList.add('hidden');
-    });
-    
-    // Toggle current dropdown
-    if (isHidden) {
-        menu.classList.remove('hidden');
+async function pjaxNavigate(url, pushState = true) {
+    if (_pjaxLoading) return;
+    _pjaxLoading = true;
+
+    // Subtle loading indicator (dim overlay, non-blocking)
+    const overlay = document.getElementById('page-transition');
+    if (overlay) { overlay.style.opacity = '0.25'; overlay.style.pointerEvents = 'none'; }
+
+    try {
+        const res = await fetch(url, {
+            headers: { 'X-PJAX': 'true', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        });
+
+        // Handle redirects to a different origin or to auth pages
+        const finalUrl = res.url;
+        if (!finalUrl.startsWith(window.location.origin)) {
+            window.location.href = finalUrl; return;
+        }
+        try {
+            const fp = new URL(finalUrl).pathname;
+            if (fp.startsWith('/Auth/') || fp.startsWith('/Admin/')) {
+                window.location.href = finalUrl; return;
+            }
+        } catch {}
+
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        const newMain = doc.getElementById('main-content');
+        if (!newMain) { window.location.href = url; return; }
+
+        // Swap title
+        document.title = doc.title;
+
+        // Swap main content
+        const curMain = document.getElementById('main-content');
+        if (curMain) curMain.innerHTML = newMain.innerHTML;
+
+        // Swap and execute page-specific scripts
+        const curScripts = document.getElementById('page-scripts');
+        const newScripts = doc.getElementById('page-scripts');
+        if (curScripts) curScripts.innerHTML = '';
+        if (newScripts && curScripts) {
+            await _executePjaxScripts(newScripts, curScripts);
+        }
+
+        // Update URL / history
+        if (pushState) {
+            history.pushState({ pjax: true, url: finalUrl }, document.title, finalUrl);
+        }
+
+        // Re-init Lucide icons for swapped content
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Update active nav link
+        setActiveNavLink();
+
+        // Update antiforgery token (so AJAX POSTs keep working)
+        const newToken = doc.querySelector('meta[name="__RequestVerificationToken"]');
+        const curToken = document.querySelector('meta[name="__RequestVerificationToken"]');
+        if (newToken && curToken) curToken.content = newToken.content;
+
+        window.scrollTo(0, 0);
+
+    } catch (err) {
+        console.warn('PJAX navigation failed, falling back:', err);
+        window.location.href = url;
+    } finally {
+        _pjaxLoading = false;
+        if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
     }
 }
 
-// Global toggle track like function - DEPRECATED
-// Like functionality has been moved to like-toggle.js module for better consistency
-// Use .js-like-toggle class on buttons with data-track-id attribute
+async function _executePjaxScripts(source, target) {
+    const scripts = Array.from(source.querySelectorAll('script'));
+    if (!scripts.length) return;
+
+    const dclCallbacks = [];
+    const origAEL = document.addEventListener.bind(document);
+
+    // Intercept DOMContentLoaded registrations so we can fire them after load
+    document.addEventListener = function(type, fn, opts) {
+        if (type === 'DOMContentLoaded') {
+            dclCallbacks.push(fn);
+        } else {
+            origAEL(type, fn, opts);
+        }
+    };
+
+    const loadPromises = [];
+
+    try {
+        for (const old of scripts) {
+            const el = document.createElement('script');
+            for (const attr of old.attributes) el.setAttribute(attr.name, attr.value);
+
+            if (old.src) {
+                el.src = old.src;
+                const p = new Promise(resolve => {
+                    el.onload = resolve;
+                    el.onerror = resolve;
+                    setTimeout(resolve, 5000);
+                });
+                loadPromises.push(p);
+                target.appendChild(el);
+            } else if (old.textContent.trim()) {
+                el.textContent = old.textContent;
+                target.appendChild(el);
+            }
+        }
+
+        if (loadPromises.length) await Promise.all(loadPromises);
+    } finally {
+        // Always restore original addEventListener
+        document.addEventListener = origAEL;
+    }
+
+    // Fire collected DOMContentLoaded callbacks
+    for (const cb of dclCallbacks) {
+        try { cb({ type: 'DOMContentLoaded', target: document, currentTarget: document }); }
+        catch (e) { console.warn('PJAX DCL callback error:', e); }
+    }
+}
+
+function setupPageTransitions() {
+    // Init history state for current page
+    if (!history.state || !history.state.pjax) {
+        history.replaceState({ pjax: true, url: window.location.href }, document.title, window.location.href);
+    }
+
+    // Intercept link clicks
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (link && shouldPjaxNavigate(link)) {
+            e.preventDefault();
+            pjaxNavigate(link.href);
+        }
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', function(e) {
+        if (e.state && e.state.pjax) {
+            pjaxNavigate(e.state.url, false);
+        }
+    });
+
+    // Hide transition overlay on initial load
+    const overlay = document.getElementById('page-transition');
+    if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+}
+
+// ─── Layout utilities ─────────────────────────────────────────────────────────
+
+function toggleDropdown(menuId) {
+    const menu = document.getElementById(menuId);
+    const isHidden = menu.classList.contains('hidden');
+
+    document.querySelectorAll('[id$="-menu"]').forEach(d => d.classList.add('hidden'));
+
+    if (isHidden) menu.classList.remove('hidden');
+}
 
 function showAuthModal(mode) {
     const modal = document.getElementById('auth-modal');
     const authContent = document.getElementById('auth-content');
     const signinForm = document.getElementById('signin-form');
     const signupForm = document.getElementById('signup-form');
-    
-    // Show modal
+
     modal.classList.remove('hidden');
-    
-    // Show appropriate form
+
     if (mode === 'signin') {
         signinForm.classList.remove('hidden');
         signupForm.classList.add('hidden');
@@ -133,8 +201,7 @@ function showAuthModal(mode) {
         signinForm.classList.add('hidden');
         signupForm.classList.remove('hidden');
     }
-    
-    // Trigger animations with a slight delay
+
     setTimeout(() => {
         authContent.classList.remove('scale-95', 'opacity-0');
         authContent.classList.add('scale-100', 'opacity-100');
@@ -144,26 +211,21 @@ function showAuthModal(mode) {
 function hideAuthModal() {
     const modal = document.getElementById('auth-modal');
     const authContent = document.getElementById('auth-content');
-    
-    // Start exit animations
+
     authContent.classList.remove('scale-100', 'opacity-100');
     authContent.classList.add('scale-95', 'opacity-0');
-    
-    // Hide modal after animation completes
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
+
+    setTimeout(() => modal.classList.add('hidden'), 300);
 }
 
 function switchAuthMode(mode) {
     const signinForm = document.getElementById('signin-form');
     const signupForm = document.getElementById('signup-form');
     const authContent = document.getElementById('auth-content');
-    
-    // Add slight scale animation when switching
+
     authContent.classList.remove('scale-100');
     authContent.classList.add('scale-95');
-    
+
     setTimeout(() => {
         if (mode === 'signin') {
             signinForm.classList.remove('hidden');
@@ -172,14 +234,10 @@ function switchAuthMode(mode) {
             signinForm.classList.add('hidden');
             signupForm.classList.remove('hidden');
         }
-        
-        // Return to normal scale
         authContent.classList.remove('scale-95');
         authContent.classList.add('scale-100');
     }, 150);
 }
-
-
 
 function showForgotPassword() {
     hideAuthModal();
@@ -187,240 +245,163 @@ function showForgotPassword() {
 }
 
 function signOut() {
-    // Create and submit logout form
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/Auth/Logout';
-    
-    // Add antiforgery token if available
-    const token = document.querySelector('input[name="__RequestVerificationToken"]');
+
+    const token = document.querySelector('meta[name="__RequestVerificationToken"]');
     if (token) {
-        const tokenInput = document.createElement('input');
-        tokenInput.type = 'hidden';
-        tokenInput.name = '__RequestVerificationToken';
-        tokenInput.value = token.value;
-        form.appendChild(tokenInput);
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = '__RequestVerificationToken';
+        input.value = token.content;
+        form.appendChild(input);
     }
-    
+
     document.body.appendChild(form);
     form.submit();
 }
 
-// Form validation functions
 function setupFormValidation() {
     const signinForm = document.getElementById('signin-form-element');
     const signupForm = document.getElementById('signup-form-element');
 
-    // Sign in form validation
     if (signinForm) {
         signinForm.addEventListener('submit', function(e) {
             e.preventDefault();
             hideAuthErrors('signin');
-            
-            const formData = new FormData(signinForm);
-            const emailOrUsername = formData.get('EmailOrUsername');
-            const password = formData.get('Password');
-            
-            // Basic validation
-            if (!emailOrUsername || !password) {
+            const data = new FormData(signinForm);
+            if (!data.get('EmailOrUsername') || !data.get('Password')) {
                 showAuthError('signin', 'Lütfen tüm gerekli alanları doldurun.');
                 return;
             }
-            
-            // Submit form
             this.submit();
         });
     }
 
-    // Sign up form validation
     if (signupForm) {
         signupForm.addEventListener('submit', function(e) {
             e.preventDefault();
             hideAuthErrors('signup');
-            
-            const formData = new FormData(signupForm);
-            const username = formData.get('Username');
-            const email = formData.get('Email');
-            const password = formData.get('Password');
-            const confirmPassword = formData.get('ConfirmPassword');
-            const agreeToTerms = formData.get('AgreeToTerms');
-            
-            // Basic validation
-            if (!username || !email || !password || !confirmPassword) {
-                showAuthError('signup', 'Lütfen tüm gerekli alanları doldurun.');
-                return;
+            const data = new FormData(signupForm);
+            const username = data.get('Username');
+            const email = data.get('Email');
+            const password = data.get('Password');
+            const confirm = data.get('ConfirmPassword');
+            const terms = data.get('AgreeToTerms');
+
+            if (!username || !email || !password || !confirm) {
+                showAuthError('signup', 'Lütfen tüm gerekli alanları doldurun.'); return;
             }
-            
-            // Username validation
             if (username.length < 3 || username.length > 50) {
-                showAuthError('signup', 'Kullanıcı adı 3 ile 50 karakter arasında olmalıdır.');
-                return;
+                showAuthError('signup', 'Kullanıcı adı 3 ile 50 karakter arasında olmalıdır.'); return;
             }
-            
-            const usernameRegex = /^[a-zA-Z0-9_-]+$/;
-            if (!usernameRegex.test(username)) {
-                showAuthError('signup', 'Kullanıcı adı sadece harf, rakam, alt çizgi ve tire içerebilir.');
-                return;
+            if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+                showAuthError('signup', 'Kullanıcı adı sadece harf, rakam, alt çizgi ve tire içerebilir.'); return;
             }
-            
-            // Email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showAuthError('signup', 'Lütfen geçerli bir e-posta adresi girin.');
-                return;
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showAuthError('signup', 'Lütfen geçerli bir e-posta adresi girin.'); return;
             }
-            
-            // Password validation
             if (password.length < 8) {
-                showAuthError('signup', 'Şifre en az 8 karakter uzunluğunda olmalıdır.');
-                return;
+                showAuthError('signup', 'Şifre en az 8 karakter uzunluğunda olmalıdır.'); return;
             }
-            
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\-_=+\[\]{}|;:,.<>])[A-Za-z\d@$!%*?&\-_=+\[\]{}|;:,.<>]+$/;
-            if (!passwordRegex.test(password)) {
-                showAuthError('signup', 'Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.');
-                return;
+            if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\-_=+\[\]{}|;:,.<>])[A-Za-z\d@$!%*?&\-_=+\[\]{}|;:,.<>]+$/.test(password)) {
+                showAuthError('signup', 'Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.'); return;
             }
-            
-            // Password confirmation
-            if (password !== confirmPassword) {
-                showAuthError('signup', 'Şifreler eşleşmiyor.');
-                return;
+            if (password !== confirm) {
+                showAuthError('signup', 'Şifreler eşleşmiyor.'); return;
             }
-            
-            // Terms agreement
-            if (!agreeToTerms) {
-                showAuthError('signup', 'Kullanım Şartları ve Gizlilik Politikası\'nı kabul etmelisiniz.');
-                return;
+            if (!terms) {
+                showAuthError('signup', 'Kullanım Şartları ve Gizlilik Politikası\'nı kabul etmelisiniz.'); return;
             }
-            
-            // Submit form
             this.submit();
         });
     }
 }
 
 function showAuthError(formType, message) {
-    const errorDiv = document.getElementById(formType + '-errors');
-    const errorMessage = document.getElementById(formType + '-error-message');
-    
-    if (errorMessage) errorMessage.textContent = message;
-    if (errorDiv) errorDiv.classList.remove('hidden');
+    const div = document.getElementById(formType + '-errors');
+    const msg = document.getElementById(formType + '-error-message');
+    if (msg) msg.textContent = message;
+    if (div) div.classList.remove('hidden');
 }
 
 function hideAuthErrors(formType) {
-    const errorDiv = document.getElementById(formType + '-errors');
-    if (errorDiv) errorDiv.classList.add('hidden');
+    const div = document.getElementById(formType + '-errors');
+    if (div) div.classList.add('hidden');
 }
 
 function setupPasswordConfirmation() {
-    const passwordField = document.getElementById('signup-password');
-    const confirmPasswordField = document.getElementById('signup-confirm-password');
-    
-    function validatePasswordMatch() {
-        if (passwordField.value && confirmPasswordField.value) {
-            if (passwordField.value !== confirmPasswordField.value) {
-                confirmPasswordField.setCustomValidity('Passwords do not match');
-            } else {
-                confirmPasswordField.setCustomValidity('');
-            }
+    const pw = document.getElementById('signup-password');
+    const cpw = document.getElementById('signup-confirm-password');
+    if (!pw || !cpw) return;
+
+    const check = () => {
+        if (pw.value && cpw.value) {
+            cpw.setCustomValidity(pw.value !== cpw.value ? 'Passwords do not match' : '');
         }
-    }
-    
-    if (passwordField && confirmPasswordField) {
-        passwordField.addEventListener('input', validatePasswordMatch);        confirmPasswordField.addEventListener('input', validatePasswordMatch);
-    }
+    };
+    pw.addEventListener('input', check);
+    cpw.addEventListener('input', check);
 }
 
 function setActiveNavLink() {
     const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('nav a[id^="nav-"]');
-    
-    navLinks.forEach(link => {
+    document.querySelectorAll('nav a[id^="nav-"]').forEach(link => {
         link.classList.remove('border-white');
         link.classList.add('border-transparent');
     });
-    
-    // Set active link based on current path
-    const activeLink = document.querySelector(`nav a[href="${currentPath}"]`);
-    if (activeLink) {
-        activeLink.classList.remove('border-transparent');
-        activeLink.classList.add('border-white');
+    const active = document.querySelector(`nav a[href="${currentPath}"]`);
+    if (active) {
+        active.classList.remove('border-transparent');
+        active.classList.add('border-white');
     }
 }
 
 function updateAuthenticationUI(isLoggedIn) {
-    const loggedInActions = document.getElementById('logged-in-actions');
-    const loggedOutActions = document.getElementById('logged-out-actions');
-    
+    const loggedIn = document.getElementById('logged-in-actions');
+    const loggedOut = document.getElementById('logged-out-actions');
     if (isLoggedIn) {
-        if (loggedInActions) loggedInActions.classList.remove('hidden');
-        if (loggedOutActions) loggedOutActions.classList.add('hidden');
+        loggedIn?.classList.remove('hidden');
+        loggedOut?.classList.add('hidden');
     } else {
-        if (loggedInActions) loggedInActions.classList.add('hidden');
-        if (loggedOutActions) loggedOutActions.classList.remove('hidden');
+        loggedIn?.classList.add('hidden');
+        loggedOut?.classList.remove('hidden');
     }
 }
 
 function setupProtectedNavigation() {
-    const exploreLink = document.getElementById('nav-explore');
-    const libraryLink = document.getElementById('nav-library');
-    
-    // Add click event listeners to protected links
-    if (exploreLink) {
-        exploreLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            showAuthModal('signin');
-        });
-        exploreLink.classList.add('cursor-pointer');
-        exploreLink.title = 'Keşfete erişmek için giriş yapın';
-    }
-    
-    if (libraryLink) {
-        libraryLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            showAuthModal('signin');
-        });
-        libraryLink.classList.add('cursor-pointer');
-        libraryLink.title = 'Kütüphanenize erişmek için giriş yapın';
-    }
+    ['nav-explore', 'nav-library'].forEach(id => {
+        const link = document.getElementById(id);
+        if (link) {
+            link.addEventListener('click', e => { e.preventDefault(); showAuthModal('signin'); });
+            link.classList.add('cursor-pointer');
+        }
+    });
 }
 
-// Initialize when DOM loads
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Lucide icons
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-    
-    // Setup form validation
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
     setupFormValidation();
     setupPasswordConfirmation();
-    
-    // Set active navigation link
     setActiveNavLink();
-    
-    // Check authentication state
+
     const loggedInActions = document.getElementById('logged-in-actions');
     const isLoggedIn = loggedInActions && !loggedInActions.classList.contains('hidden');
-    
     updateAuthenticationUI(isLoggedIn);
-    
-    if (!isLoggedIn) {
-        setupProtectedNavigation();
-    }
-    
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(event) {
-        const dropdowns = document.querySelectorAll('[id$="-dropdown"]');
-        dropdowns.forEach(dropdown => {
-            if (!dropdown.contains(event.target)) {
-                const menu = dropdown.querySelector('[id$="-menu"]');
-                if (menu) {
-                    menu.classList.add('hidden');
-                }
+    if (!isLoggedIn) setupProtectedNavigation();
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', function(e) {
+        document.querySelectorAll('[id$="-dropdown"]').forEach(dd => {
+            if (!dd.contains(e.target)) {
+                dd.querySelector('[id$="-menu"]')?.classList.add('hidden');
             }
         });
-    });    // Audio player setup moved to audioPlayer.js
+    });
+
     setupPageTransitions();
 });
