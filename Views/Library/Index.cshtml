@@ -203,12 +203,12 @@
                                                 </td>
                                                 <td class="px-6 py-4 text-gray-400 text-sm hidden lg:table-cell">
                                                     @track.CreatedAt.ToString("MMM dd, yyyy")
-                                                </td>                                                <td class="px-6 py-4">
+                                                </td>                                                <td class="px-6 py-4" onclick="event.stopPropagation()">
                                                     <div class="flex items-center space-x-2">
-                                                        <button onclick="openEditModal('@track.Id', '@Html.Raw(Html.Encode(track.Title))', '@Html.Raw(Html.Encode(track.Description ?? ""))')" class="w-8 h-8 bg-white/10 hover:bg-accent/20 rounded-lg flex items-center justify-center transition-colors duration-300" title="Edit">
+                                                        <button onclick="openEditModal('@track.Id', '@Html.Raw(Html.Encode(track.Title))', '@Html.Raw(Html.Encode(track.Description ?? ""))')" class="w-8 h-8 bg-white/10 hover:bg-accent/20 rounded-lg flex items-center justify-center transition-colors duration-300" title="Düzenle">
                                                             <i data-lucide="edit-2" class="w-4 h-4 text-gray-400 hover:text-accent"></i>
                                                         </button>
-                                                        <button onclick="deleteTrack('@track.Id')" class="w-8 h-8 bg-white/10 hover:bg-red-500/20 rounded-lg flex items-center justify-center transition-colors duration-300" title="Delete">
+                                                        <button onclick="deleteTrack('@track.Id')" class="w-8 h-8 bg-white/10 hover:bg-red-500/20 rounded-lg flex items-center justify-center transition-colors duration-300" title="Sil">
                                                             <i data-lucide="trash-2" class="w-4 h-4 text-gray-400 hover:text-red-400"></i>
                                                         </button>
                                                     </div>
@@ -413,4 +413,29 @@
     </div>
 </div>
 
-<script src="~/js/library/library.js"></script>
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] hidden items-center justify-center p-4">
+    <div class="bg-[#1c1c1c] rounded-2xl border border-white/10 w-full max-w-sm p-6 shadow-2xl" style="animation: dropdownIn 0.2s cubic-bezier(0.16,1,0.3,1) both">
+        <div class="flex items-start gap-4 mb-5">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background: rgba(239,68,68,0.15)">
+                <i data-lucide="trash-2" class="w-5 h-5 text-red-400"></i>
+            </div>
+            <div>
+                <h3 class="text-white font-semibold text-base">Şarkıyı Sil</h3>
+                <p class="text-gray-400 text-sm mt-0.5">Bu işlem geri alınamaz. Şarkı kalıcı olarak silinecek.</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white transition-colors" style="background: rgba(255,255,255,0.08);">
+                İptal
+            </button>
+            <button onclick="confirmDelete()" id="confirmDeleteBtn" class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors" style="background: #ef4444;">
+                Evet, Sil
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/library/library.js"></script>
+}

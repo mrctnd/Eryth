@@ -83,29 +83,48 @@ body.player-visible #main-content {
 .player-progress-track {
     position: relative;
     flex: 1;
+    height: 16px;   /* Large hit area — no layout shift on hover */
+    cursor: pointer;
+}
+
+/* Visual rail (pseudo-element so height can animate without affecting layout) */
+.player-progress-track::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
     height: 4px;
     background: #4d4d4d;
     border-radius: 2px;
-    cursor: pointer;
+    transform: translateY(-50%);
     transition: height 0.15s ease;
+    pointer-events: none;
 }
 
-.player-progress-track:hover {
+.player-progress-track:hover::before {
     height: 6px;
 }
 
+/* Fill — absolutely positioned, centered on the rail */
 .player-progress-fill {
-    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 4px;
     background: #b3b3b3;
     border-radius: 2px;
-    transition: background 0.15s ease;
+    transform: translateY(-50%);
+    transition: background 0.15s ease, height 0.15s ease;
     pointer-events: none;
 }
 
 .player-progress-track:hover .player-progress-fill {
     background: #1DB954;
+    height: 6px;
 }
 
+/* Thumb — scales in on hover */
 .player-progress-thumb {
     position: absolute;
     top: 50%;

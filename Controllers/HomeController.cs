@@ -66,7 +66,6 @@ namespace Eryth.Controllers
             }
             catch (Exception)
             {
-                TempData["Error"] = "Ana sayfa yüklenirken bir hata oluştu";
                 return View(new DashboardViewModel());
             }
         }

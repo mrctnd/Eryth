@@ -12,66 +12,69 @@ document.addEventListener("DOMContentLoaded", function () {
       this.style.transform = "translateY(0) scale(1)";
     });
   });
-}); // Play track function
-function playTrack(trackId, title, artist, audioUrl, coverUrl) {
-  // Call the global playTrack function from audioPlayer.js
-  if (typeof window.playTrack === 'function') {
-    window.playTrack(trackId, title, artist, audioUrl, coverUrl);
-  } else {
-    console.warn('Global playTrack function not found - check if audioPlayer.js is loaded');
-    console.log("Playing:", title, "by", artist);
+});
+
+// Delete track — shows custom modal
+let _pendingDeleteId = null;
+
+function deleteTrack(trackId) {
+  _pendingDeleteId = trackId;
+  const modal = document.getElementById("deleteConfirmModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    if (typeof lucide !== "undefined") lucide.createIcons();
   }
 }
 
-// Delete track function
-function deleteTrack(trackId) {
-  if (
-    confirm(
-      "Are you sure you want to delete this track? This action cannot be undone."
-    )
-  ) {
-    // Get CSRF token
-    const token =
-      document.querySelector('input[name="__RequestVerificationToken"]')
-        ?.value ||
-      document.querySelector('meta[name="__RequestVerificationToken"]')
-        ?.content;
-
-    fetch("/Library/DeleteTrack", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        RequestVerificationToken: token,
-      },
-      body: `id=${encodeURIComponent(
-        trackId
-      )}&__RequestVerificationToken=${encodeURIComponent(token || "")}`,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          // Remove the track row from the table
-          const trackRows = document.querySelectorAll(
-            'tr[onclick*="' + trackId + '"]'
-          );
-          trackRows.forEach((row) => row.remove());
-
-          // Show success message
-          showNotification("Track deleted successfully", "success");
-
-          // Refresh page after a short delay to update counts
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-        } else {
-          showNotification(data.message || "Error deleting track", "error");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        showNotification("Error deleting track", "error");
-      });
+function closeDeleteModal() {
+  const modal = document.getElementById("deleteConfirmModal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
   }
+  _pendingDeleteId = null;
+}
+
+function confirmDelete() {
+  if (!_pendingDeleteId) return;
+  const trackId = _pendingDeleteId;
+
+  const btn = document.getElementById("confirmDeleteBtn");
+  if (btn) { btn.textContent = "Siliniyor..."; btn.disabled = true; }
+
+  const token =
+    document.querySelector('input[name="__RequestVerificationToken"]')?.value ||
+    document.querySelector('meta[name="__RequestVerificationToken"]')?.content;
+
+  fetch("/Library/DeleteTrack", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      RequestVerificationToken: token,
+    },
+    body: `id=${encodeURIComponent(trackId)}&__RequestVerificationToken=${encodeURIComponent(token || "")}`,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      closeDeleteModal();
+      if (data.success) {
+        const trackRows = document.querySelectorAll('tr[onclick*="' + trackId + '"]');
+        trackRows.forEach((row) => row.remove());
+        showNotification("Şarkı başarıyla silindi", "success");
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        showNotification(data.message || "Şarkı silinirken hata oluştu", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      closeDeleteModal();
+      showNotification("Şarkı silinirken hata oluştu", "error");
+    })
+    .finally(() => {
+      if (btn) { btn.textContent = "Evet, Sil"; btn.disabled = false; }
+    });
 }
 
 // Open edit modal
@@ -196,17 +199,19 @@ function showNotification(message, type = "info") {
   }, 3000);
 }
 
-// Close modal when clicking outside
+// Close modals when clicking on backdrop
 document.addEventListener("click", function (event) {
-  const modal = document.getElementById("editTrackModal");
-  if (event.target === modal) {
-    closeEditModal();
-  }
+  const editModal = document.getElementById("editTrackModal");
+  if (event.target === editModal) closeEditModal();
+
+  const deleteModal = document.getElementById("deleteConfirmModal");
+  if (event.target === deleteModal) closeDeleteModal();
 });
 
-// Close modal with Escape key
+// Close modals with Escape key
 document.addEventListener("keydown", function (event) {
   if (event.key === "Escape") {
     closeEditModal();
+    closeDeleteModal();
   }
 });

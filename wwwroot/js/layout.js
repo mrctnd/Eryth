@@ -4,6 +4,34 @@
 
 let _pjaxLoading = false;
 
+// ─── PJAX progress bar ────────────────────────────────────────────────────────
+
+function _pjaxBarStart() {
+    let bar = document.getElementById('pjax-progress-bar');
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'pjax-progress-bar';
+        document.body.appendChild(bar);
+    }
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    bar.style.opacity = '1';
+    bar.offsetWidth; // force reflow so reset takes effect
+    bar.style.transition = 'width 1s cubic-bezier(0.1, 0.5, 0.5, 1)';
+    bar.style.width = '70%';
+}
+
+function _pjaxBarDone() {
+    const bar = document.getElementById('pjax-progress-bar');
+    if (!bar) return;
+    bar.style.transition = 'width 0.15s ease';
+    bar.style.width = '100%';
+    setTimeout(() => {
+        bar.style.transition = 'opacity 0.25s ease';
+        bar.style.opacity = '0';
+    }, 150);
+}
+
 function shouldPjaxNavigate(link) {
     const href = link.href;
     if (!href || href === window.location.href) return false;
@@ -27,15 +55,28 @@ async function pjaxNavigate(url, pushState = true) {
     if (_pjaxLoading) return;
     _pjaxLoading = true;
 
-    // Subtle loading indicator (dim overlay, non-blocking)
-    const overlay = document.getElementById('page-transition');
-    if (overlay) { overlay.style.opacity = '0.25'; overlay.style.pointerEvents = 'none'; }
+    const curMain = document.getElementById('main-content');
+
+    // Close any open dropdowns before navigating
+    document.querySelectorAll('[id$="-menu"]').forEach(m => m.classList.add('hidden'));
+
+    // Start accent progress bar + fade-out current content
+    _pjaxBarStart();
+    if (curMain) {
+        curMain.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+        curMain.style.opacity = '0';
+        curMain.style.transform = 'translateY(10px)';
+    }
 
     try {
-        const res = await fetch(url, {
-            headers: { 'X-PJAX': 'true', 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'same-origin'
-        });
+        // Fetch page + wait minimum 150ms for exit animation
+        const [res] = await Promise.all([
+            fetch(url, {
+                headers: { 'X-PJAX': 'true', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            }),
+            new Promise(r => setTimeout(r, 150))
+        ]);
 
         // Handle redirects to a different origin or to auth pages
         const finalUrl = res.url;
@@ -58,9 +99,12 @@ async function pjaxNavigate(url, pushState = true) {
         // Swap title
         document.title = doc.title;
 
-        // Swap main content
-        const curMain = document.getElementById('main-content');
-        if (curMain) curMain.innerHTML = newMain.innerHTML;
+        // Swap main content (still invisible — opacity: 0)
+        if (curMain) {
+            curMain.innerHTML = newMain.innerHTML;
+            curMain.style.transition = 'none';
+            curMain.style.transform = 'translateY(-10px)'; // enter from above
+        }
 
         // Swap and execute page-specific scripts
         const curScripts = document.getElementById('page-scripts');
@@ -88,12 +132,27 @@ async function pjaxNavigate(url, pushState = true) {
 
         window.scrollTo(0, 0);
 
+        // Fade in new content
+        _pjaxBarDone();
+        requestAnimationFrame(() => {
+            if (curMain) {
+                curMain.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                curMain.style.opacity = '1';
+                curMain.style.transform = 'translateY(0)';
+            }
+        });
+
     } catch (err) {
+        _pjaxBarDone();
+        if (curMain) {
+            curMain.style.transition = '';
+            curMain.style.opacity = '1';
+            curMain.style.transform = '';
+        }
         console.warn('PJAX navigation failed, falling back:', err);
         window.location.href = url;
     } finally {
         _pjaxLoading = false;
-        if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
     }
 }
 
@@ -170,9 +229,9 @@ function setupPageTransitions() {
         }
     });
 
-    // Hide transition overlay on initial load
+    // Hide legacy transition overlay
     const overlay = document.getElementById('page-transition');
-    if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+    if (overlay) overlay.style.display = 'none';
 }
 
 // ─── Layout utilities ─────────────────────────────────────────────────────────
@@ -348,13 +407,11 @@ function setupPasswordConfirmation() {
 function setActiveNavLink() {
     const currentPath = window.location.pathname;
     document.querySelectorAll('nav a[id^="nav-"]').forEach(link => {
-        link.classList.remove('border-white');
-        link.classList.add('border-transparent');
+        link.classList.remove('nav-link-active');
     });
     const active = document.querySelector(`nav a[href="${currentPath}"]`);
     if (active) {
-        active.classList.remove('border-transparent');
-        active.classList.add('border-white');
+        active.classList.add('nav-link-active');
     }
 }
 
