@@ -10,12 +10,16 @@ namespace Eryth.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly ILogger<LikeService> _logger;
 
-        public LikeService(ApplicationDbContext context, INotificationService notificationService)
+        public LikeService(ApplicationDbContext context, INotificationService notificationService, ILogger<LikeService> logger)
         {
             _context = context;
             _notificationService = notificationService;
-        }        public async Task<bool> LikeTrackAsync(Guid trackId, Guid userId)
+            _logger = logger;
+        }
+
+        public async Task<bool> LikeTrackAsync(Guid trackId, Guid userId)
         {
             var track = await _context.Tracks.FindAsync(trackId);
             if (track == null) return false;
@@ -33,11 +37,11 @@ namespace Eryth.Services
             };
 
             _context.Likes.Add(like);
-            
+
             // Update cached like count
             track.LikeCount++;
             _context.Tracks.Update(track);
-            
+
             await _context.SaveChangesAsync();
 
             // Bildirim gönder
@@ -60,30 +64,30 @@ namespace Eryth.Services
             if (track == null) return false;
 
             _context.Likes.Remove(like);
-            
+
             // Update cached like count
             track.LikeCount = Math.Max(0, track.LikeCount - 1);
             _context.Tracks.Update(track);
-            
+
             await _context.SaveChangesAsync();
             return true;
-        }public async Task<bool> LikePlaylistAsync(Guid playlistId, Guid userId)
+        }
+
+        public async Task<bool> LikePlaylistAsync(Guid playlistId, Guid userId)
         {
             try
             {
                 var playlist = await _context.Playlists.FindAsync(playlistId);
-                if (playlist == null) 
+                if (playlist == null)
                 {
-                    Console.WriteLine($"Playlist not found: {playlistId}");
                     return false;
                 }
 
                 var existingLike = await _context.Likes
                     .FirstOrDefaultAsync(l => l.PlaylistId == playlistId && l.UserId == userId);
 
-                if (existingLike != null) 
+                if (existingLike != null)
                 {
-                    Console.WriteLine($"Like already exists for playlist {playlistId} and user {userId}");
                     return false;
                 }
 
@@ -97,8 +101,6 @@ namespace Eryth.Services
                 _context.Likes.Add(like);
                 await _context.SaveChangesAsync();
 
-                Console.WriteLine($"Successfully liked playlist {playlistId} by user {userId}");
-
                 // Bildirim gönder
                 if (playlist.CreatedByUserId != userId)
                 {
@@ -108,8 +110,7 @@ namespace Eryth.Services
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to create notification: {ex.Message}");
-                        // Don't fail the like operation if notification fails
+                        _logger.LogWarning(ex, "Failed to create notification for playlist like {PlaylistId}", playlistId);
                     }
                 }
 
@@ -117,33 +118,31 @@ namespace Eryth.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in LikePlaylistAsync: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                _logger.LogError(ex, "Error liking playlist {PlaylistId}", playlistId);
                 return false;
             }
-        }        public async Task<bool> UnlikePlaylistAsync(Guid playlistId, Guid userId)
+        }
+
+        public async Task<bool> UnlikePlaylistAsync(Guid playlistId, Guid userId)
         {
             try
             {
                 var like = await _context.Likes
                     .FirstOrDefaultAsync(l => l.PlaylistId == playlistId && l.UserId == userId);
 
-                if (like == null) 
+                if (like == null)
                 {
-                    Console.WriteLine($"No like found for playlist {playlistId} and user {userId}");
                     return false;
                 }
 
                 _context.Likes.Remove(like);
                 await _context.SaveChangesAsync();
-                
-                Console.WriteLine($"Successfully unliked playlist {playlistId} by user {userId}");
+
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in UnlikePlaylistAsync: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                _logger.LogError(ex, "Error unliking playlist {PlaylistId}", playlistId);
                 return false;
             }
         }

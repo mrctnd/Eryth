@@ -13,17 +13,20 @@ namespace Eryth.Controllers
         private readonly ITrackService _trackService;
         private readonly IPlaylistService _playlistService;
         private readonly IUserService _userService;
+        private readonly ILogger<CommentController> _logger;
 
         public CommentController(
             ICommentService commentService,
             ITrackService trackService,
             IPlaylistService playlistService,
-            IUserService userService)
+            IUserService userService,
+            ILogger<CommentController> logger)
         {
             _commentService = commentService;
             _trackService = trackService;
             _playlistService = playlistService;
             _userService = userService;
+            _logger = logger;
         }
 
         // GET: Comment/Track/{trackId}
@@ -38,7 +41,7 @@ namespace Eryth.Controllers
                 {
                     return StatusCode(429);
                 }
-                var currentUserId = GetRequiredUserId();
+                var currentUserId = GetCurrentUserId() ?? Guid.Empty;
                 var comments = await _commentService.GetTrackCommentsAsync(trackId, currentUserId, page, pageSize);
                 var totalCount = await _commentService.GetCommentCountAsync(trackId: trackId);
 
@@ -63,7 +66,8 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Error loading comments: {ex.Message}");
+                _logger.LogError(ex, "Error loading track comments for {TrackId}", trackId);
+                return BadRequest("Error loading comments");
             }
         }
 
@@ -79,7 +83,7 @@ namespace Eryth.Controllers
                 {
                     return StatusCode(429);
                 }
-                var currentUserId = GetRequiredUserId();
+                var currentUserId = GetCurrentUserId() ?? Guid.Empty;
                 var comments = await _commentService.GetPlaylistCommentsAsync(playlistId, currentUserId, page, pageSize);
                 var totalCount = await _commentService.GetCommentCountAsync(playlistId: playlistId);
 
@@ -104,7 +108,8 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Error loading comments: {ex.Message}");
+                _logger.LogError(ex, "Error loading playlist comments for {PlaylistId}", playlistId);
+                return BadRequest("Error loading comments");
             }
         }
 
@@ -128,10 +133,11 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error loading replies for comment {CommentId}", parentCommentId);
+                return Json(new { success = false, message = "Error loading replies" });
             }
-        }       
-        
+        }
+
          // POST: Comment/Create
         [HttpPost("Create")]
         [Authorize]
@@ -140,49 +146,25 @@ namespace Eryth.Controllers
         {
             try
             {
-                Console.WriteLine($"[CommentController.Create] Received request");
-                Console.WriteLine($"[CommentController.Create] ModelState.IsValid: {ModelState.IsValid}");
-                Console.WriteLine($"[CommentController.Create] Model data: TrackId={model?.TrackId}, PlaylistId={model?.PlaylistId}, Content='{model?.Content}'");
-                Console.WriteLine($"[CommentController.Create] User authenticated: {User.Identity?.IsAuthenticated}");
-                Console.WriteLine($"[CommentController.Create] User ID from claims: {GetCurrentUserId()}");
-
-                // Form verisi alındı kaydedildi
-                if (Request.HasFormContentType)
-                {
-                    Console.WriteLine("[CommentController.Create] Form data:");
-                    foreach (var item in Request.Form)
-                    {
-                        Console.WriteLine($"  {item.Key}: {item.Value}");
-                    }
-                }
-
                 // Rate limiting: 10 dakkada 10 yorum
                 if (!await CheckRateLimitAsync("comment_create", 10, TimeSpan.FromMinutes(10)))
                 {
-                    Console.WriteLine("[CommentController.Create] Rate limit exceeded");
                     return StatusCode(429, new { success = false, message = "Too many comments. Please wait before commenting again." });
                 }
 
                 if (!ModelState.IsValid)
                 {
-                    Console.WriteLine("[CommentController.Create] ModelState is invalid:");
-                    foreach (var error in ModelState)
-                    {
-                        Console.WriteLine($"  {error.Key}: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
-                    }
                     return BadRequest(new { success = false, message = "Invalid comment data", errors = ModelState });
                 }
 
                 if (model == null)
                 {
-                    Console.WriteLine("[CommentController.Create] Model is null");
                     return BadRequest(new { success = false, message = "Comment data is required" });
                 }
 
                 // Validasyon modeli
                 if (!model.IsValid())
                 {
-                    Console.WriteLine("[CommentController.Create] Model validation failed - no valid target specified");
                     return BadRequest(new { success = false, message = "Invalid comment target. Must specify either track or playlist." });
                 }
 
@@ -190,15 +172,8 @@ namespace Eryth.Controllers
                 model.Content = SecurityHelper.SanitizeInput(model.Content);
 
                 var userId = GetRequiredUserId();
-                Console.WriteLine($"[CommentController.Create] Creating comment for user: {userId}");
-                
                 var comment = await _commentService.CreateCommentAsync(model, userId);
-
-                Console.WriteLine($"[CommentController.Create] Comment created successfully with ID: {comment.Id}");
-
                 var commentViewModel = await _commentService.GetCommentViewModelAsync(comment.Id, userId);
-
-                Console.WriteLine($"[CommentController.Create] Returning success response for comment ID: {comment.Id}");
 
                 return Json(new
                 {
@@ -209,12 +184,11 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[CommentController.Create] Exception: {ex.Message}");
-                Console.WriteLine($"[CommentController.Create] Stack trace: {ex.StackTrace}");
+                _logger.LogError(ex, "Error creating comment");
                 return Json(new
                 {
                     success = false,
-                    message = $"Error creating comment: {ex.Message}"
+                    message = "An error occurred while creating the comment"
                 });
             }
         }
@@ -235,7 +209,7 @@ namespace Eryth.Controllers
                 if (string.IsNullOrWhiteSpace(content) || content.Length > 1000)
                 {
                     return BadRequest(new { success = false, message = "Comment content must be between 1 and 1000 characters." });
-                }                
+                }
                 content = SecurityHelper.SanitizeInput(content);
 
                 var userId = GetRequiredUserId();
@@ -257,10 +231,11 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating comment {CommentId}", id);
                 return Json(new
                 {
                     success = false,
-                    message = $"Error updating comment: {ex.Message}"
+                    message = "An error occurred while updating the comment"
                 });
             }
         }
@@ -270,22 +245,16 @@ namespace Eryth.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id)
         {
-            System.Diagnostics.Debug.WriteLine($"Delete comment called for ID: {id}");
-
             try
             {
                 // Rate limiting: 10 dakkada 10 silme işlemi
                 if (!await CheckRateLimitAsync("comment_delete", 10, TimeSpan.FromMinutes(10)))
                 {
-                    System.Diagnostics.Debug.WriteLine("Rate limit exceeded for comment delete");
                     return StatusCode(429, new { success = false, message = "Too many delete attempts. Please wait before trying again." });
                 }
 
                 var userId = GetRequiredUserId();
-                System.Diagnostics.Debug.WriteLine($"User ID: {userId}");
-
                 var success = await _commentService.DeleteCommentAsync(id, userId);
-                System.Diagnostics.Debug.WriteLine($"Delete success: {success}");
 
                 if (!success)
                 {
@@ -300,10 +269,11 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting comment {CommentId}", id);
                 return Json(new
                 {
                     success = false,
-                    message = $"Error deleting comment: {ex.Message}"
+                    message = "An error occurred while deleting the comment"
                 });
             }
         }
@@ -320,7 +290,7 @@ namespace Eryth.Controllers
                 {
                     return StatusCode(429);
                 }
-                var currentUserId = GetRequiredUserId();
+                var currentUserId = GetCurrentUserId() ?? Guid.Empty;
                 var comment = await _commentService.GetCommentViewModelAsync(id, currentUserId);
 
                 return Json(new { success = true, comment = comment });
@@ -331,7 +301,8 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error loading comment details {CommentId}", id);
+                return Json(new { success = false, message = "Error loading comment" });
             }
         }
 
@@ -373,10 +344,11 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating reply");
                 return Json(new
                 {
                     success = false,
-                    message = $"Error creating reply: {ex.Message}"
+                    message = "An error occurred while creating the reply"
                 });
             }
         }
@@ -404,8 +376,9 @@ namespace Eryth.Controllers
 
                 return Json(new { success = true, comments = commentData });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading track comments for {TrackId}", trackId);
                 return Json(new { success = false, message = "Error loading comments" });
             }
         }        private string GetRelativeTime(DateTime dateTime)

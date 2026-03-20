@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
 namespace Eryth.Infrastructure
@@ -7,13 +8,12 @@ namespace Eryth.Infrastructure
     public class MemoryCacheService : ICacheService
     {
         private readonly IMemoryCache _cache;
-        private readonly HashSet<string> _keys;
-        private readonly object _lock = new();
+        private readonly ConcurrentDictionary<string, byte> _keys = new();
+        private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(30);
 
         public MemoryCacheService(IMemoryCache cache)
         {
             _cache = cache;
-            _keys = new HashSet<string>();
         }
 
         public Task<T?> GetAsync<T>(string key)
@@ -29,22 +29,15 @@ namespace Eryth.Infrastructure
             if (expiration.HasValue)
                 options.SetAbsoluteExpiration(expiration.Value);
             else
-                options.SetSlidingExpiration(TimeSpan.FromMinutes(30));
+                options.SetSlidingExpiration(DefaultExpiration);
 
-            options.RegisterPostEvictionCallback((k, v, r, s) =>
+            options.RegisterPostEvictionCallback((k, _, _, _) =>
             {
-                lock (_lock)
-                {
-                    _keys.Remove(k.ToString() ?? string.Empty);
-                }
+                _keys.TryRemove(k.ToString() ?? string.Empty, out _);
             });
 
             _cache.Set(key, value, options);
-
-            lock (_lock)
-            {
-                _keys.Add(key);
-            }
+            _keys.TryAdd(key, 0);
 
             return Task.CompletedTask;
         }
@@ -52,36 +45,20 @@ namespace Eryth.Infrastructure
         public Task RemoveAsync(string key)
         {
             _cache.Remove(key);
-
-            lock (_lock)
-            {
-                _keys.Remove(key);
-            }
+            _keys.TryRemove(key, out _);
 
             return Task.CompletedTask;
         }
 
         public Task RemovePatternAsync(string pattern)
         {
-            var regex = new Regex(pattern, RegexOptions.IgnoreCase);
-            var keysToRemove = new List<string>();
-
-            lock (_lock)
-            {
-                keysToRemove.AddRange(_keys.Where(key => regex.IsMatch(key)));
-            }
+            var regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var keysToRemove = _keys.Keys.Where(key => regex.IsMatch(key)).ToList();
 
             foreach (var key in keysToRemove)
             {
                 _cache.Remove(key);
-            }
-
-            lock (_lock)
-            {
-                foreach (var key in keysToRemove)
-                {
-                    _keys.Remove(key);
-                }
+                _keys.TryRemove(key, out _);
             }
 
             return Task.CompletedTask;

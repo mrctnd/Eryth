@@ -54,6 +54,7 @@ namespace Eryth.Services
         public async Task<IEnumerable<UserViewModel>> SearchUsersAsync(string query, Guid currentUserId, int page, int pageSize)
         {
             var users = await _context.Users
+                .AsNoTracking()
                 .Where(u => u.Username.Contains(query) || u.DisplayName.Contains(query))
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -64,17 +65,15 @@ namespace Eryth.Services
 
         public async Task<IEnumerable<UserViewModel>> GetAllUsersAsync(Guid currentUserId, int page, int pageSize)
         {
-            // Get all users for debugging
-            var allUsers = await _context.Users
+            var users = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Status == AccountStatus.Active)
                 .OrderByDescending(u => u.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            // Only return active users but log all
-            var activeUsers = allUsers.Where(u => u.Status == Models.Enums.AccountStatus.Active).ToList();
-            
-            return activeUsers.Select(u => UserViewModel.FromUser(u, currentUserId));
+            return users.Select(u => UserViewModel.FromUser(u, currentUserId));
         }
 
         public async Task<bool> UpdateProfileAsync(Guid userId, UserProfileEditViewModel model)
@@ -301,11 +300,9 @@ namespace Eryth.Services
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
-                // Log the error
-                System.Diagnostics.Debug.WriteLine($"Error deleting user account: {ex.Message}");
                 return false;
             }
         }

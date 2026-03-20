@@ -31,22 +31,17 @@ namespace Eryth.Services
         public async Task<IEnumerable<TrackViewModel>> GetAllTracksAsync(int page, int pageSize)
         {
             try
-            {                // Get all active, non-deleted tracks
+            {
                 var tracks = await _context.Tracks
+                    .AsNoTracking()
                     .Include(t => t.Artist)
-                    .Include(t => t.Likes)
                     .Where(t => t.Status == TrackStatus.Active && t.DeletedAt == null)
                     .OrderByDescending(t => t.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
 
-                _logger.LogInformation($"Found {tracks.Count} total tracks. Status breakdown: {string.Join(", ", tracks.GroupBy(t => t.Status).Select(g => $"{g.Key}: {g.Count()}"))}");
-
-                // Only return active tracks for now, but log all
-                var activeTracks = tracks.Where(t => t.Status == TrackStatus.Active).ToList();
-                
-                return activeTracks.Select(t => TrackViewModel.FromTrack(t, false, false, false, false));
+                return tracks.Select(t => TrackViewModel.FromTrack(t, false, false, false, false));
             }
             catch (Exception ex)
             {
@@ -67,27 +62,22 @@ namespace Eryth.Services
         }        public async Task<TrackViewModel> GetTrackViewModelAsync(Guid trackId, Guid currentUserId)
         {
             var track = await _context.Tracks
+                .AsNoTracking()
                 .Include(t => t.Artist)
                 .Include(t => t.Album)
-                .Include(t => t.Likes)
-                .Include(t => t.Comments)
                 .FirstOrDefaultAsync(t => t.Id == trackId && t.DeletedAt == null);
-                
+
             if (track == null)
                 return null!;
 
-            // Debug log
-            System.Diagnostics.Debug.WriteLine($"Track found: {track.Title}, ArtistId: {track.ArtistId}");
-            System.Diagnostics.Debug.WriteLine($"Artist: {track.Artist?.Username ?? "null"}");
+            // Check like status with a separate efficient query
+            var isLiked = currentUserId != Guid.Empty &&
+                         await _context.Likes.AnyAsync(l => l.TrackId == trackId && l.UserId == currentUserId);
 
-            // Like durumunu kontrol et
-            var isLiked = currentUserId != Guid.Empty && 
-                         track.Likes?.Any(l => l.UserId == currentUserId) == true;
-
-            return TrackViewModel.FromTrack(track, 
-                currentUserId == track.ArtistId, 
-                true, 
-                true, 
+            return TrackViewModel.FromTrack(track,
+                currentUserId == track.ArtistId,
+                true,
+                true,
                 isLiked);
         }
 
@@ -275,9 +265,9 @@ namespace Eryth.Services
         public async Task<IEnumerable<Track>> GetPopularTracksAsync(int count = 10)
         {
             return await _context.Tracks
+                .AsNoTracking()
                 .Where(t => t.Status == TrackStatus.Active)
                 .Include(t => t.Artist)
-                .Include(t => t.Likes)
                 .OrderByDescending(t => t.PlayCount)
                 .ThenByDescending(t => t.LikeCount)
                 .Take(count)
@@ -287,6 +277,7 @@ namespace Eryth.Services
         public async Task<IEnumerable<Track>> GetRecentTracksAsync(int count = 10)
         {
             return await _context.Tracks
+                .AsNoTracking()
                 .Where(t => t.Status == TrackStatus.Active)
                 .Include(t => t.Artist)
                 .OrderByDescending(t => t.CreatedAt)
@@ -360,11 +351,11 @@ namespace Eryth.Services
             try
             {
                 var tracks = await _context.Tracks
+                    .AsNoTracking()
                     .Include(t => t.Artist)
-                    .Include(t => t.Likes)
                     .Where(t => t.Status == TrackStatus.Active)
                     .OrderByDescending(t => t.PlayCount)
-                    .ThenByDescending(t => t.Likes.Count)
+                    .ThenByDescending(t => t.LikeCount)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize).ToListAsync();
 
@@ -388,8 +379,8 @@ namespace Eryth.Services
                     .ToListAsync();
 
                 var tracks = await _context.Tracks
+                    .AsNoTracking()
                     .Include(t => t.Artist)
-                    .Include(t => t.Likes)
                     .Where(t => t.Status == TrackStatus.Active)
                     .Where(t => t.ArtistId != userId && !followingIds.Contains(t.ArtistId))
                     .OrderByDescending(t => t.CreatedAt)
@@ -413,8 +404,8 @@ namespace Eryth.Services
                     return Enumerable.Empty<TrackViewModel>();
 
                 var tracks = await _context.Tracks
+                    .AsNoTracking()
                     .Include(t => t.Artist)
-                    .Include(t => t.Likes)
                     .Where(t => t.Status == TrackStatus.Active)
                     .Where(t => t.Title.Contains(query) ||
                                t.Artist.Username.Contains(query) ||

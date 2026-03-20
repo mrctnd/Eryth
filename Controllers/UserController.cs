@@ -15,6 +15,7 @@ namespace Eryth.Controllers
         private readonly ITrackService _trackService;
         private readonly IPlaylistService _playlistService;
         private readonly ILikeService _likeService;
+        private readonly ILogger<UserController> _logger;
 
         public UserController(
             IUserService userService,
@@ -22,49 +23,41 @@ namespace Eryth.Controllers
             ITrackService trackService,
             IPlaylistService playlistService,
             ILikeService likeService,
-            IMemoryCache cache) : base(cache)
+            IMemoryCache cache,
+            ILogger<UserController> logger) : base(cache)
         {
             _userService = userService;
             _followService = followService;
             _trackService = trackService;
             _playlistService = playlistService;
             _likeService = likeService;
+            _logger = logger;
         }
-        
+
         // Kullanıcı profil sayfası
         [AllowAnonymous]
         public async Task<IActionResult> Profile(string? username, string tab = "all")
         {
             try
             {
-                // Debug için log
-                System.Diagnostics.Debug.WriteLine($"Profile called with username: '{username}', tab: '{tab}'");
-                System.Diagnostics.Debug.WriteLine($"User.Identity.IsAuthenticated: {User.Identity?.IsAuthenticated}");
-                System.Diagnostics.Debug.WriteLine($"User.Identity.Name: '{User.Identity?.Name}'");
-
                 // Eğer username boşsa, mevcut kullanıcının profilini göster
                 if (string.IsNullOrEmpty(username))
                 {
                     username = User.Identity?.Name;
-                    System.Diagnostics.Debug.WriteLine($"Username was empty, using User.Identity.Name: '{username}'");
 
                     if (string.IsNullOrEmpty(username))
                     {
-                        System.Diagnostics.Debug.WriteLine("No username found, redirecting to Home");
                         TempData["Error"] = "Profil görüntülenemiyor";
                         return RedirectToAction("Index", "Home");
                     }
                 }
 
                 var currentUserId = GetCurrentUserId() ?? Guid.Empty;
-                System.Diagnostics.Debug.WriteLine($"Current user ID: {currentUserId}");
 
                 var user = await _userService.GetUserByUsernameAsync(username);
-                System.Diagnostics.Debug.WriteLine($"User found: {user != null}, Username: {user?.Username}");
 
                 if (user == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"User not found for username: '{username}'");
                     TempData["Error"] = "Kullanıcı bulunamadı";
                     return RedirectToAction("Index", "Home");
                 }
@@ -72,13 +65,12 @@ namespace Eryth.Controllers
                 var profileViewModel = UserProfileViewModel.FromUser(user, currentUserId);
                 ViewBag.ActiveTab = tab;
 
-                System.Diagnostics.Debug.WriteLine($"Profile view model created successfully, returning view");
                 return View(profileViewModel);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in Profile action: {ex.Message}");
-                TempData["Error"] = "Profil yüklenirken bir hata oluştu: " + ex.Message;
+                _logger.LogError(ex, "Error loading profile for {Username}", username);
+                TempData["Error"] = "Profil yüklenirken bir hata oluştu";
                 return RedirectToAction("Index", "Home");
             }
         }
@@ -120,7 +112,7 @@ namespace Eryth.Controllers
                 model.DisplayName = SanitizeInput(model.DisplayName);
                 model.Bio = SanitizeInput(model.Bio);
                 model.Location = SanitizeInput(model.Location);
-                model.Website = SanitizeInput(model.Website); 
+                model.Website = SanitizeInput(model.Website);
                 var userId = GetRequiredUserId();
                 var success = await _userService.UpdateUserAsync(userId, model);
 
@@ -145,8 +137,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating profile settings");
                 ModelState.AddModelError(string.Empty, "Profil güncellenirken bir hata oluştu");
                 return View(model);
             }
@@ -173,8 +166,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading account settings");
                 TempData["Error"] = "Ayarlar yüklenirken bir hata oluştu";
                 return RedirectToAction("Index", "Home");
             }
@@ -279,8 +273,9 @@ namespace Eryth.Controllers
                         var profileImageUrl = $"/uploads/profiles/{fileName}";
                         await _userService.UploadProfileImageAsync(userId, profileImageUrl);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error uploading profile image for user {UserId}", userId);
                         ModelState.AddModelError("ProfileImage", "Profil fotoğrafı yüklenirken bir hata oluştu");
                         return View(model);
                     }
@@ -313,8 +308,9 @@ namespace Eryth.Controllers
                         var bannerImageUrl = $"/uploads/banners/{fileName}";
                         await _userService.UploadBannerImageAsync(userId, bannerImageUrl);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error uploading banner image for user {UserId}", userId);
                         ModelState.AddModelError("BannerImage", "Banner fotoğrafı yüklenirken bir hata oluştu");
                         return View(model);
                     }
@@ -347,8 +343,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating account settings");
                 ModelState.AddModelError(string.Empty, "Ayarlar güncellenirken bir hata oluştu");
                 return View(model);
             }
@@ -382,8 +379,9 @@ namespace Eryth.Controllers
 
                 return SuccessResult(new { isEnabled = user.IsTwoFactorEnabled });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error toggling 2FA");
                 return ErrorResult("İşlem gerçekleştirilemedi");
             }
         }
@@ -431,8 +429,9 @@ namespace Eryth.Controllers
             {
                 return ErrorResult("Giriş yapmanız gerekiyor");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error toggling follow for user {UserId}", userId);
                 return ErrorResult("İşlem gerçekleştirilemedi");
             }
         }
@@ -459,8 +458,9 @@ namespace Eryth.Controllers
 
                 return View(followers);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading followers for {Username}", username);
                 TempData["Error"] = "Takipçiler yüklenirken bir hata oluştu";
                 return RedirectToAction("Index", "Home");
             }
@@ -488,8 +488,9 @@ namespace Eryth.Controllers
 
                 return View(following);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading following for {Username}", username);
                 TempData["Error"] = "Takip edilenler yüklenirken bir hata oluştu";
                 return RedirectToAction("Index", "Home");
             }
@@ -514,8 +515,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading liked tracks");
                 TempData["Error"] = "Beğenilen müzikler yüklenirken bir hata oluştu";
                 return View(new List<TrackViewModel>());
             }
@@ -552,14 +554,15 @@ namespace Eryth.Controllers
 
                 return View(users);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error searching users");
                 TempData["Error"] = "Arama yapılırken bir hata oluştu";
                 return View(new List<UserViewModel>());
             }
         }
 
-        // Kullanıcı yorumları sayfası        
+        // Kullanıcı yorumları sayfası
         public async Task<IActionResult> Comments(string? username, int page = 1)
         {
             try
@@ -600,8 +603,9 @@ namespace Eryth.Controllers
 
                 return View(comments);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading comments for {Username}", username);
                 TempData["Error"] = "Yorumlar yüklenirken bir hata oluştu";
                 return RedirectToAction("Index", "Home");
             }
@@ -613,19 +617,14 @@ namespace Eryth.Controllers
         {
             try
             {
-                // Debug log
-                System.Diagnostics.Debug.WriteLine($"GetArtistInfo called with artistId: {artistId}");
-                
                 if (artistId == Guid.Empty)
                 {
-                    System.Diagnostics.Debug.WriteLine("ArtistId is empty GUID");
                     return Json(new { success = false, message = "Invalid artist ID" });
                 }
 
                 var user = await _userService.GetByIdAsync(artistId);
                 if (user == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"User not found for artistId: {artistId}");
                     return Json(new { success = false, message = "Artist not found" });
                 }
 
@@ -646,10 +645,9 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in GetArtistInfo: {ex.Message}");
-                return Json(new { success = false, message = "Error loading artist info: " + ex.Message });
+                _logger.LogError(ex, "Error loading artist info for {ArtistId}", artistId);
+                return Json(new { success = false, message = "Error loading artist info" });
             }
         }
     }
 }
-

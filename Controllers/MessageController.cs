@@ -10,10 +10,12 @@ namespace Eryth.Controllers
     public class MessageController : BaseController
     {
         private readonly IMessageService _messageService;
-        
-        public MessageController(IMessageService messageService, IMemoryCache cache) : base(cache)
+        private readonly ILogger<MessageController> _logger;
+
+        public MessageController(IMessageService messageService, IMemoryCache cache, ILogger<MessageController> logger) : base(cache)
         {
             _messageService = messageService;
+            _logger = logger;
         }
 
         // Mesajlar ana sayfa
@@ -35,8 +37,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading messages");
                 TempData["Error"] = "Messages could not be loaded";
                 return View(new List<MessageViewModel>());
             }
@@ -62,8 +65,9 @@ namespace Eryth.Controllers
             {
                 return ErrorResult("You need to be logged in");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting unread message count");
                 return ErrorResult("Could not get message count");
             }
         }
@@ -81,20 +85,21 @@ namespace Eryth.Controllers
             {
                 var userId = GetRequiredUserId();
                 var result = await _messageService.MarkAsReadAsync(id, userId);
-                
+
                 if (result)
                 {
                     return SuccessResult(message: "Message marked as read");
                 }
-                
+
                 return ErrorResult("Message not found or already read");
             }
             catch (UnauthorizedAccessException)
             {
                 return ErrorResult("You need to be logged in");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error marking message {MessageId} as read", id);
                 return ErrorResult("Could not update message");
             }
         }
@@ -112,20 +117,21 @@ namespace Eryth.Controllers
             {
                 var userId = GetRequiredUserId();
                 var result = await _messageService.DeleteMessageAsync(id, userId);
-                
+
                 if (result)
                 {
                     return SuccessResult(message: "Message deleted");
                 }
-                
+
                 return ErrorResult("Message not found");
             }
             catch (UnauthorizedAccessException)
             {
                 return ErrorResult("You need to be logged in");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting message {MessageId}", id);
                 return ErrorResult("Could not delete message");
             }
         }
@@ -158,8 +164,9 @@ namespace Eryth.Controllers
             {
                 return ErrorResult("You need to be logged in");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting latest messages");
                 return ErrorResult("Could not get messages");
             }
         }
@@ -182,14 +189,16 @@ namespace Eryth.Controllers
             {
                 var userId = GetRequiredUserId();
                 var message = await _messageService.SendMessageAsync(model, userId);
-                
+
                 return Json(new { success = true, message = "Message sent successfully!" });
             }
             catch (UnauthorizedAccessException)
             {
                 return Json(new { success = false, error = "You need to be logged in." });
-            }            catch (Exception)
+            }
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error sending message");
                 return Json(new { success = false, error = "An error occurred while sending the message." });
             }
         }
@@ -212,7 +221,7 @@ namespace Eryth.Controllers
             {
                 var userId = GetRequiredUserId();
 
-                // Kullanıcı adı veya görünen ad ile kullanıcıları ara                
+                // Kullanıcı adı veya görünen ad ile kullanıcıları ara
                 var users = await _messageService.SearchUsersAsync(query, userId, 10);
 
                 return SuccessResult(users.Select(u => new {
@@ -226,8 +235,9 @@ namespace Eryth.Controllers
             {
                 return ErrorResult("You need to be logged in");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error searching users");
                 return ErrorResult("Could not search users");
             }
         }
@@ -237,37 +247,30 @@ namespace Eryth.Controllers
         [Route("Message/Conversation/{messageId:guid}")]
         public async Task<IActionResult> Conversation(Guid messageId)
         {
-            Console.WriteLine($"Conversation action called with messageId: {messageId}");
             try
             {
                 var userId = GetRequiredUserId();
-                Console.WriteLine($"Current userId: {userId}");
-                
-                Console.WriteLine($"Getting conversation for messageId: {messageId}");
                 var conversation = await _messageService.GetConversationByMessageAsync(messageId, userId);
-                
+
                 if (conversation == null)
                 {
-                    Console.WriteLine("Conversation not found!");
                     TempData["Error"] = "Message not found or access denied";
                     return RedirectToAction("Index");
                 }
 
-                Console.WriteLine($"Conversation found: {conversation.Subject}");
                 // Mesaj okunmamışsa okundu olarak işaretle
                 await _messageService.MarkAsReadAsync(messageId, userId);
 
                 return View(conversation);
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
-                Console.WriteLine($"Unauthorized access: {ex.Message}");
                 return RedirectToAction("Login", "Auth");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Conversation action: {ex.Message}");
-                TempData["Error"] = $"Could not load conversation: {ex.Message}";
+                _logger.LogError(ex, "Error loading conversation for message {MessageId}", messageId);
+                TempData["Error"] = "Could not load conversation";
                 return RedirectToAction("Index");
             }
         }
@@ -290,11 +293,11 @@ namespace Eryth.Controllers
             {
                 var userId = GetRequiredUserId();
                 var reply = await _messageService.SendReplyAsync(conversationId, content.Trim(), userId);
-                
+
                 if (reply != null)
                 {
-                    return Json(new { 
-                        success = true, 
+                    return Json(new {
+                        success = true,
                         message = "Reply sent successfully!",
                         reply = new {
                             id = reply.Id,
@@ -305,15 +308,16 @@ namespace Eryth.Controllers
                         }
                     });
                 }
-                
+
                 return Json(new { success = false, error = "Failed to send reply." });
             }
             catch (UnauthorizedAccessException)
             {
                 return Json(new { success = false, error = "You need to be logged in." });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error sending reply to conversation {ConversationId}", conversationId);
                 return Json(new { success = false, error = "An error occurred while sending the reply." });
             }
         }

@@ -188,8 +188,7 @@ namespace Eryth.Controllers
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
 
-            // Basit HTML encoding
-            return System.Web.HttpUtility.HtmlEncode(input);
+            return System.Net.WebUtility.HtmlEncode(input);
         }
     }
 }

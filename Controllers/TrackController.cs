@@ -14,11 +14,13 @@ namespace Eryth.Controllers
     {
         private readonly ITrackService _trackService;
         private readonly ILikeService _likeService;
+        private readonly ILogger<TrackController> _logger;
 
-        public TrackController(ITrackService trackService, ILikeService likeService, IMemoryCache cache) : base(cache)
+        public TrackController(ITrackService trackService, ILikeService likeService, IMemoryCache cache, ILogger<TrackController> logger) : base(cache)
         {
             _trackService = trackService;
             _likeService = likeService;
+            _logger = logger;
         }
 
         // Müzik detay sayfası
@@ -37,8 +39,9 @@ namespace Eryth.Controllers
                 }
                 return View(track);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading track details for {TrackId}", id);
                 TempData["Error"] = "Müzik yüklenirken bir hata oluştu";
                 return RedirectToAction("Index", "Home");
             }
@@ -97,8 +100,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error uploading track");
                 ModelState.AddModelError(string.Empty, "Müzik yüklenirken bir hata oluştu");
                 return View(model);
             }
@@ -126,8 +130,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading track edit page for {TrackId}", id);
                 TempData["Error"] = "Müzik yüklenirken bir hata oluştu";
                 return RedirectToAction("Index", "Home");
             }
@@ -172,8 +177,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error editing track {TrackId}", model.Id);
                 ModelState.AddModelError(string.Empty, "Müzik güncellenirken bir hata oluştu");
                 return View(model);
             }
@@ -210,8 +216,9 @@ namespace Eryth.Controllers
                 TempData["Error"] = "Yetkiniz bulunmuyor";
                 return RedirectToAction(nameof(MyTracks));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting track {TrackId}", id);
                 TempData["Error"] = "Müzik silinirken bir hata oluştu";
                 return RedirectToAction(nameof(MyTracks));
             }
@@ -222,9 +229,6 @@ namespace Eryth.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleLike(Guid id)
         {
-            // Debug logging
-            System.Diagnostics.Debug.WriteLine($"ToggleLike called for track: {id}");
-            
             // Rate limiting kontrolü
             if (IsRateLimited("toggle-like", 50, TimeSpan.FromMinutes(10)))
             {
@@ -234,34 +238,22 @@ namespace Eryth.Controllers
             try
             {
                 var userId = GetRequiredUserId();
-                System.Diagnostics.Debug.WriteLine($"User ID: {userId}");
-                
                 var isLiked = await _likeService.IsTrackLikedAsync(id, userId);
-                System.Diagnostics.Debug.WriteLine($"Track is currently liked: {isLiked}");
 
                 bool success;
                 if (isLiked)
                 {
-                    System.Diagnostics.Debug.WriteLine("Attempting to unlike track");
                     success = await _likeService.UnlikeTrackAsync(id, userId);
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Attempting to like track");
                     success = await _likeService.LikeTrackAsync(id, userId);
                 }
-
-                System.Diagnostics.Debug.WriteLine($"Operation success: {success}");
 
                 if (success)
                 {
                     var likeCount = await _likeService.GetTrackLikeCountAsync(id);
-                    System.Diagnostics.Debug.WriteLine($"New like count: {likeCount}");
-                    
-                    var result = new { isLiked = !isLiked, likeCount };
-                    System.Diagnostics.Debug.WriteLine($"Returning: {System.Text.Json.JsonSerializer.Serialize(result)}");
-                    
-                    return SuccessResult(data: result);
+                    return SuccessResult(data: new { isLiked = !isLiked, likeCount });
                 }
 
                 return ErrorResult("İşlem gerçekleştirilemedi");
@@ -270,8 +262,9 @@ namespace Eryth.Controllers
             {
                 return ErrorResult("Giriş yapmanız gerekiyor");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error toggling like for track {TrackId}", id);
                 return ErrorResult("İşlem gerçekleştirilemedi");
             }
         }
@@ -293,8 +286,9 @@ namespace Eryth.Controllers
                 await _trackService.IncrementPlayCountAsync(id, userId);
                 return SuccessResult();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error incrementing play count for {TrackId}", id);
                 return ErrorResult("Play count güncellenemedi");
             }
         }
@@ -318,8 +312,9 @@ namespace Eryth.Controllers
             {
                 return RedirectToAction("Login", "Auth");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading user tracks");
                 TempData["Error"] = "Müzikler yüklenirken bir hata oluştu";
                 return View(new List<TrackViewModel>());
             }
@@ -331,24 +326,14 @@ namespace Eryth.Controllers
         {
             try
             {
-                // Debug logging
-                System.Diagnostics.Debug.WriteLine($"UpdateTrack called for ID: {request.Id}");
-                System.Diagnostics.Debug.WriteLine($"Title: {request.Title}");
-                System.Diagnostics.Debug.WriteLine($"Description: {request.Description}");
-                System.Diagnostics.Debug.WriteLine($"Genre: {request.Genre}");
-                System.Diagnostics.Debug.WriteLine($"ReleaseDate: {request.ReleaseDate}");
-
                 var userId = GetRequiredUserId();
 
                 // Track'in kullanıcıya ait olup olmadığını kontrol et
                 var track = await _trackService.GetTrackByIdAsync(request.Id);
                 if (track == null || track.ArtistId != userId)
                 {
-                    System.Diagnostics.Debug.WriteLine("Track not found or unauthorized");
                     return Json(new { success = false, message = "Track not found or unauthorized" });
                 }
-
-                System.Diagnostics.Debug.WriteLine($"Original track title: {track.Title}");
 
                 // Track'i güncelle
                 track.Title = request.Title?.Trim() ?? track.Title;
@@ -365,11 +350,7 @@ namespace Eryth.Controllers
                 track.AllowDownloads = request.AllowDownloads;
                 track.UpdatedAt = DateTime.UtcNow;
 
-                System.Diagnostics.Debug.WriteLine($"Updated track title: {track.Title}");
-
                 var result = await _trackService.UpdateTrackAsync(track);
-
-                System.Diagnostics.Debug.WriteLine($"Update result: {result}");
 
                 if (result)
                 {
@@ -386,9 +367,7 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                // Log the error for debugging
-                System.Diagnostics.Debug.WriteLine($"Error updating track: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                _logger.LogError(ex, "Error updating track {TrackId}", request.Id);
                 return Json(new { success = false, message = "An error occurred while updating the track" });
             }
         }
@@ -418,8 +397,9 @@ namespace Eryth.Controllers
 
                 return Json(new { success = true, tracks = trackData });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error loading related tracks for {TrackId}", id);
                 return Json(new { success = false, message = "Error loading related tracks" });
             }
         }
@@ -450,7 +430,8 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { error = "Error searching tracks: " + ex.Message });
+                _logger.LogError(ex, "Error searching tracks");
+                return Json(new { error = "Error searching tracks" });
             }
         }
 
@@ -476,7 +457,8 @@ namespace Eryth.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { error = "Error loading tracks", message = ex.Message });
+                _logger.LogError(ex, "Error loading all tracks");
+                return Json(new { error = "Error loading tracks" });
             }
         }
 
@@ -487,15 +469,8 @@ namespace Eryth.Controllers
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"AddToAlbum called - Title: {model.Title}, AlbumId: {model.AlbumId}");
-                
                 if (!ModelState.IsValid)
                 {
-                    var errors = ModelState
-                        .Where(x => x.Value?.Errors.Count > 0)
-                        .Select(x => new { Field = x.Key, Errors = x.Value?.Errors.Select(e => e.ErrorMessage) })
-                        .ToArray();
-                    System.Diagnostics.Debug.WriteLine($"Model validation failed: {System.Text.Json.JsonSerializer.Serialize(errors)}");
                     return Json(new { success = false, error = "Invalid data provided." });
                 }
 
@@ -504,24 +479,21 @@ namespace Eryth.Controllers
 
                 if (success)
                 {
-                    System.Diagnostics.Debug.WriteLine("Track added successfully");
                     return Json(new { success = true, message = "Track added to album successfully!" });
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Failed to add track");
                     return Json(new { success = false, error = "Failed to add track to album." });
                 }
             }
             catch (UnauthorizedAccessException)
             {
-                System.Diagnostics.Debug.WriteLine("Unauthorized access");
                 return Json(new { success = false, error = "Unauthorized access." });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Exception in AddToAlbum: {ex.Message}");
-                return Json(new { success = false, error = ex.Message });
+                _logger.LogError(ex, "Error adding track to album {AlbumId}", model.AlbumId);
+                return Json(new { success = false, error = "An error occurred while adding the track." });
             }
         }
 

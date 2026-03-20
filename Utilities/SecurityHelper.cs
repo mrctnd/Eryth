@@ -9,7 +9,7 @@ namespace Eryth.Utilities
         // Şifre hash'leme için salt uzunluğu
         private const int SaltSize = 32;
         private const int HashSize = 32;
-        private const int Iterations = 10000;
+        private const int Iterations = 600000;
 
         // Şifre hash'leme
         public static string HashPassword(string password)
@@ -83,13 +83,7 @@ namespace Eryth.Utilities
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
 
-            // Tehlikeli karakterleri temizle
-            return input
-                .Replace("<", "&lt;")
-                .Replace(">", "&gt;")
-                .Replace("\"", "&quot;")
-                .Replace("'", "&#x27;")
-                .Replace("&", "&amp;");
+            return System.Net.WebUtility.HtmlEncode(input);
         }
     }
 }

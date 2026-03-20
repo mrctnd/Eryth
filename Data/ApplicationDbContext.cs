@@ -136,6 +136,7 @@ namespace Eryth.Data
             {
                 entity.HasIndex(e => e.Username).IsUnique();
                 entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.CreatedAt);
             });
             // Configure Track entity
             modelBuilder.Entity<Track>(entity =>
@@ -149,6 +150,11 @@ namespace Eryth.Data
                     .WithMany(a => a.Tracks)
                     .HasForeignKey(t => t.AlbumId)
                     .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(e => e.ArtistId);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => new { e.Status, e.DeletedAt });
             });
             // Configure Album entity
             modelBuilder.Entity<Album>(entity =>
@@ -237,6 +243,9 @@ namespace Eryth.Data
                     .WithMany(c => c.Replies)
                     .HasForeignKey(c => c.ParentCommentId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => new { e.TrackId, e.IsDeleted });
+                entity.HasIndex(e => e.UserId);
             });
             // Configure Like entity
             modelBuilder.Entity<Like>(entity =>
